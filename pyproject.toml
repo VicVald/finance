@@ -1,0 +1,17 @@
+[project]
+name = "finance"
+version = "0.1.0"
+description = "Agente Bancário Inteligente - Banco Ágil"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+    "langchain>=0.2.0",
+    "langchain-openai>=0.1.0",
+    "langgraph>=0.2.0",
+    "streamlit>=1.35.0",
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.7.0",
+    "pyjwt>=2.8.0"
+]
