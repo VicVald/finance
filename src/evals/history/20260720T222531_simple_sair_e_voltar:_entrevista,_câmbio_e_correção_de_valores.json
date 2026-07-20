@@ -1,0 +1,146 @@
+{
+  "run_id": "simple-20260720_222531",
+  "timestamp": "2026-07-20T22:25:31.085342+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Sair e Voltar: Entrevista, Câmbio e Correção de Valores",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Quero aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi. Deixe-me te direcionar ao setor responsável para análise de aumento de limite.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, aceito fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "Olá, João! Vou realizar a entrevista de crédito para recalcular seu score. Preciso de 5 informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego** (formal, autônomo ou desempregado)\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua renda mensal bruta?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500 e sou empregado formal, CLT",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Ótimo! Anotei:\n\n- **Renda mensal bruta:** R$ 8.500,00\n- **Tipo de emprego:** Formal (CLT)\n\nAgora preciso dos próximos dados:\n\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nQual o valor das suas despesas fixas mensais?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Na verdade, qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Essa informação está fora do escopo da entrevista de crédito. Vou te redirecionar para o atendimento geral.",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Qual a cotação atual do dólar comercial?",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "A cotação do Dólar (USD) hoje é:\n\n- **Compra:** R$ 5,10\n- **Venda:** R$ 5,11\n\nQuando quiser retomar a entrevista de crédito, é só me avisar! 😊",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Quero voltar para a entrevista de crédito",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Claro! Vamos retomar a entrevista de crédito de onde paramos. Já temos:\n\n✅ **Renda mensal bruta:** R$ 8.500,00\n✅ **Tipo de emprego:** Formal (CLT)\n\nAgora me informe:\n\n3. **Despesas fixas mensais** (em R$) — Quanto você gasta por mês com aluguel, contas, alimentação, etc.?\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPode começar pelo valor das suas despesas fixas mensais.",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Na verdade, minha renda mensal é R$ 10.000, corrigindo o valor",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "Anotado! Atualizei sua renda para **R$ 10.000,00**.\n\nAgora, por favor, me informe:\n\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nComece pelo valor das suas despesas fixas mensais.",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Anotado! Segue resumo do que já temos:\n\n✅ **Renda mensal bruta:** R$ 10.000,00\n✅ **Tipo de emprego:** Formal (CLT)\n✅ **Despesas fixas mensais:** R$ 3.200,00\n\nFaltam duas informações:\n\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Anotado! ✅\n\nRestam apenas **uma pergunta**:\n\n5. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 10,
+      "speaker": "user",
+      "message": "Não tenho dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 10,
+      "speaker": "bot",
+      "message": "Seu novo **score de crédito** foi calculado: **553 pontos**.\n\nSeu limite de crédito anterior era R$ 5.000,00. Agora você será redirecionado para o setor de crédito para analisar as opções disponíveis. Obrigado, João! 😊",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 11,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 11,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Se precisar de algo no futuro, estou à disposição! 😊",
+      "active_agent": "triage"
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "score": 0.95,
+    "reasoning": "A conversa atendeu a todos os critérios de sucesso do cenário. O robô permitiu sair da entrevista para consultar câmbio, retornou, aceitou correção de valores, concluiu a entrevista com recálculo de score e encerrou quando solicitado. Apenas a rejeição inicial do limite alto poderia ser mais explícita, mas o usuário aceitou fazer a entrevista, indicando que o direcionamento foi adequado.",
+    "detected_violations": []
+  }
+}

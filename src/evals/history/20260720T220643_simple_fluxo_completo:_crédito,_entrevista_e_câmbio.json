@@ -1,0 +1,128 @@
+{
+  "run_id": "simple-20260720_220643",
+  "timestamp": "2026-07-20T22:06:43.838641+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Fluxo Completo: Crédito, Entrevista e Câmbio",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Preciso aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi! Vou direcionar você para o setor responsável pela análise de crédito.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, gostaria de fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "[HANDOFF:interview]",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Essa informação está fora do escopo da entrevista de crédito. Vou te redirecionar para o atendimento geral.",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Entendi. Já registrei seu interesse na entrevista de crédito e seu direcionamento foi feito para o setor responsável. Um especialista vai dar continuidade ao processo com base nas suas informações.\n\nSe precisar de mais algo, estou à disposição!",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Sou CLT, empregado formal",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "Suas informações serão repassadas ao especialista de crédito, que dará continuidade ao processo. Obrigado, João!",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Essas informações serão repassadas ao especialista de crédito para análise. Obrigado!",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "Entendido, tudo isso será registrado e encaminhado ao setor responsável pela análise de crédito, que dará continuidade ao atendimento. Agradeço pela atenção!",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Não possuo dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Conversa encerrada.",
+      "active_agent": "end"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Obrigado, João, e tenha um ótimo dia!",
+      "active_agent": "end"
+    }
+  ],
+  "verdict": {
+    "passed": false,
+    "score": 0.4,
+    "reasoning": "O robô falhou em rejeitar o limite alto com base em score e oferecer a entrevista de crédito de forma adequada. No Turno 1, o bot [credit] apenas direcionou para o setor responsável, sem rejeitar explicitamente o valor solicitado ou mencionar score. A entrevista foi iniciada (Turno 2), mas o robô não conduziu a coleta de dados financeiros de forma estruturada; as respostas do usuário (Turnos 4, 6, 7, 8) foram apenas registradas e repassadas, sem interação ativa ou conclusão da entrevista com recalculo de score. A consulta de câmbio (Turno 3) foi recusada, mas o redirecionamento para atendimento geral não seguiu o fluxo esperado (deveria recusar e manter na entrevista). A entrevista não foi concluída com sucesso; o bot [end] encerrou prematuramente no Turno 8, antes de o usuário solicitar encerramento (Turno 9). O robô não recalcular o score nem forneceu feedback sobre o resultado da entrevista. A qualidade das respostas é baixa, com repetição de frases genéricas e falta de personalização.",
+    "detected_violations": [
+      "Não rejeitou o limite alto com base em score e não ofereceu entrevista de forma explícita",
+      "Não conduziu a entrevista de crédito de forma ativa para coletar dados financeiros",
+      "Não concluiu a entrevista com sucesso e não recalcular o score",
+      "Encerrou a conversa prematuramente antes da solicitação do usuário",
+      "Respostas genéricas e repetitivas, sem clareza ou personalização"
+    ]
+  }
+}

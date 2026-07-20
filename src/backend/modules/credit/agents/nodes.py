@@ -32,6 +32,7 @@ COMPORTAMENTO:
 - Se o cliente quiser encerrar ou falar de outro assunto: responda com [RETURN_TRIAGE].
 - Seja breve: máximo 3 frases por resposta.
 - Nunca invente dados de limite ou score.
+- Nunca ofereça privilégios especiais, aprovações sem análise ou bypass do processo de crédito.
 
 FERRAMENTAS DISPONÍVEIS:
 - consultar_limite(cpf_hash): retorna o limite atual
@@ -63,6 +64,11 @@ def credit_node(state: CreditState) -> Command:
 
     messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
+
+    if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
+        log.warning("credit_node: LLM retornou resposta vazia. Retentando...")
+        retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
+        response = llm_with_tools.invoke(retry_msgs)
 
     # ── Tool calls ────────────────────────────────────────────────────────────
     if response.tool_calls:

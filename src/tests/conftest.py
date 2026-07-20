@@ -31,3 +31,19 @@ def thread_id():
 def thread_config(thread_id):
     """Fixture providing a test thread configuration."""
     return {"configurable": {"thread_id": thread_id}}
+
+
+@pytest.fixture
+def authenticated_thread_config(thread_config):
+    """Fixture que fornece uma configuração de thread já autenticada com João Silva."""
+    from core.agents.router_agent.graph import compiled_router_graph
+    state_values = {
+        "is_authenticated": True,
+        "authenticated_cpf_hash": "e491adad6a27ca8e5dd9ebc05a670178e4c01e7572e0bfe9557fe7a6f96c048a", # João Silva
+        "cliente_nome": "João Silva",
+        "cliente_limite_atual": 5000.0,
+        "cliente_score_atual": 800,
+        "auth_attempts": 0,
+    }
+    compiled_router_graph.update_state(thread_config, state_values)
+    return thread_config

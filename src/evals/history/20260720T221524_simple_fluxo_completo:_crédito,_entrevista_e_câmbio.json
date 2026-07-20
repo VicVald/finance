@@ -1,0 +1,124 @@
+{
+  "run_id": "simple-20260720_221524",
+  "timestamp": "2026-07-20T22:15:24.931241+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Fluxo Completo: Crédito, Entrevista e Câmbio",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Preciso aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi, vou direcionar você para o setor responsável por análise de crédito.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, gostaria de fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "Olá, João! Vamos realizar a entrevista de crédito para recalcular seu score. Preciso das seguintes informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego**: formal, autônomo ou desempregado\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua renda mensal bruta?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Essa informação está fora do escopo da entrevista de crédito. Vou redirecioná-lo para o setor adequado.",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Quero voltar para a entrevista de crédito",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Vamos retomar. Para iniciar a entrevista de crédito, preciso saber:\n\n1. **Qual é a sua renda mensal bruta?** (em R$)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500 e sou CLT, empregado formal",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "Obrigado, João! Agora preciso das demais informações:\n\n2. **Despesas fixas mensais?** (em R$)\n3. **Número de dependentes?**\n4. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Entendi. E para finalizar:\n\n3. **Quantos dependentes você tem?**\n4. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "Obrigado. E para encerrar: **você possui alguma dívida ativa?** (sim/não)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Não possuo dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Em breve você receberá o retorno sobre a solicitação de aumento de limite.",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Obrigado, João, e tenha um bom dia!",
+      "active_agent": "triage"
+    }
+  ],
+  "verdict": {
+    "passed": false,
+    "score": 0.7,
+    "reasoning": "A conversa atendeu à maioria dos critérios, mas falhou no primeiro passo crítico. O usuário solicitou um aumento de limite de R$ 100.000 e o robô respondeu apenas redirecionando para o setor de crédito, sem rejeitar o valor com base em score e sem oferecer a entrevista de crédito. O cenário exige que o robô rejeite o limite alto e proponha a entrevista. Essa omissão configura uma violação do objetivo principal. O restante do fluxo foi executado corretamente: a entrevista foi conduzida, a consulta de câmbio foi recusada com redirecionamento, o retorno à entrevista foi permitido, a entrevista foi concluída e o atendimento encerrado ao solicitar. Portanto, o teste não foi aprovado integralmente.",
+    "detected_violations": [
+      "O robô não rejeitou explicitamente o limite alto baseado em score e não ofereceu a entrevista conforme esperado; apenas redirecionou para o setor de crédito."
+    ]
+  }
+}

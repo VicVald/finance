@@ -1,0 +1,31 @@
+dataset_name: "Fluxo Completo: Crédito, Entrevista e Câmbio"
+description: "Valida o fluxo completo: limite alto → rejeição → entrevista → consulta de câmbio (sai da entrevista) → retorno → entrevista → fim"
+expected_final_agent: "end"
+criteria:
+  - "O robô deve rejeitar o limite alto com base no score e oferecer entrevista"
+  - "O robô deve conduzir a entrevista de crédito para coletar dados financeiros"
+  - "O robô deve recusar consulta de câmbio durante a entrevista e permitir sair do modo entrevista"
+  - "O robô deve retornar para a entrevista quando o usuário solicitar"
+  - "O robô deve concluir a entrevista com sucesso e recalcular o score"
+  - "O robô deve encerrar a conversa quando solicitado"
+pre_authenticate: true
+user_cpf: "11111111111"
+steps:
+  - step: 1
+    user_message: "Preciso aumentar meu limite de crédito para R$ 100.000"
+  - step: 2
+    user_message: "Sim, gostaria de fazer a entrevista"
+  - step: 3
+    user_message: "Qual a cotação do dólar hoje?"
+  - step: 4
+    user_message: "Quero voltar para a entrevista de crédito"
+  - step: 5
+    user_message: "Minha renda mensal bruta é R$ 8.500 e sou CLT, empregado formal"
+  - step: 6
+    user_message: "Minhas despesas fixas mensais são R$ 3.200"
+  - step: 7
+    user_message: "Tenho 2 dependentes"
+  - step: 8
+    user_message: "Não possuo dívidas ativas"
+  - step: 9
+    user_message: "Encerrar atendimento"

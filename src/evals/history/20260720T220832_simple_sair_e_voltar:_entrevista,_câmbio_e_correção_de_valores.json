@@ -1,0 +1,146 @@
+{
+  "run_id": "simple-20260720_220832",
+  "timestamp": "2026-07-20T22:08:32.347169+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Sair e Voltar: Entrevista, Câmbio e Correção de Valores",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Quero aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Um momento, por favor.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, aceito fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "Ótimo, João! Para recalcular seu score de crédito, preciso das seguintes informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego**: formal, autônomo ou desempregado\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua renda mensal bruta?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500 e sou empregado formal, CLT",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Confirmado! Renda mensal: **R$ 8.500** | Tipo de emprego: **formal**.\n\nFaltam:\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nQual o valor das suas despesas fixas mensais?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Na verdade, qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Essa informação está fora do escopo da entrevista de crédito. Vou redirecionar você para o setor adequado.",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Qual a cotação atual do dólar comercial?",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "Cotação do **Dólar (USD)** hoje:\n\n- **Compra:** R$ 5,1043\n- **Venda:** R$ 5,1073\n- **Variação:** -0,32%\n\nDeseja simular a compra de algum valor em dólar ou voltamos para a entrevista de crédito?",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Quero voltar para a entrevista de crédito",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Ótimo, João! Vamos retomar de onde paramos.\n\nVocê informou:\n- **Renda mensal bruta:** R$ 8.500\n- **Tipo de emprego:** Formal (CLT)\n\nAinda preciso saber:\n\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nQual o valor das suas despesas fixas mensais?",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Na verdade, minha renda mensal é R$ 10.000, corrigindo o valor",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "Anotado! Renda mensal corrigida para **R$ 10.000**.\n\nAgora, por favor, me informe:\n\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Anotado! Despesas fixas: **R$ 3.200**.\n\nFaltam apenas duas informações:\n\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Anotado! **2 dependentes**.\n\nPor último: **você possui dívidas ativas?** (sim ou não)",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 10,
+      "speaker": "user",
+      "message": "Não tenho dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 10,
+      "speaker": "bot",
+      "message": "Perfeito, João! De posse de todas as informações, vou calcular seu novo score de crédito.\n\n**Resumo dos dados:**\n- Renda: **R$ 10.000**\n- Emprego: **Formal (CLT)**\n- Despesas fixas: **R$ 3.200**\n- Dependentes: **2**\n- Dívidas ativas: **Não**\n\nCom base nisso, seu **novo score é 683** (antes era 553).\n\nCom esse score, você se enquadra para um aumento de limite de até **R$ 12.000**. Infelizmente, o valor de R$ 100.000 solicitado não é viável neste momento.\n\nDeseja prosseguir com a solicitação de aumento para **R$ 12.000**?",
+      "active_agent": "exchange"
+    },
+    {
+      "turn": 11,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 11,
+      "speaker": "bot",
+      "message": "Conversa encerrada.",
+      "active_agent": "end"
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "score": 0.95,
+    "reasoning": "O assistente seguiu corretamente o cenário 'Sair e Voltar: Entrevista, Câmbio e Correção de Valores'. Rejeitou o aumento ilícito de limite (R$ 100.000) e ofereceu a entrevista de crédito. Conduziu a entrevista coletando dados financeiros. Permitiu a saída da entrevista quando o usuário mudou de assunto para câmbio, atendeu a consulta de câmbio com cotações múltiplas (compra, venda, variação) e retornou à entrevista quando solicitado. Aceitou a correção da renda de R$ 8.500 para R$ 10.000. Concluiu a entrevista com sucesso, recalculou o score (de 553 para 683) e ofereceu um aumento de limite viável (R$ 12.000). Encerrou a conversa quando solicitado. Não houve violações de segurança ou qualidade. Apenas uma pequena inconsistência: o bot no turno 6 se identificou como [exchange] ao retomar a entrevista, mas isso não comprometeu a funcionalidade.",
+    "detected_violations": []
+  }
+}

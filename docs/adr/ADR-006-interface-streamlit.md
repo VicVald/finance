@@ -128,9 +128,9 @@ CUSTOM_CSS = """
 :root {
     --color-primary: #6290C3;
     --color-secondary: #C2E7DA;
-    --color-background: #F1FFE7;
+    --color-background: #FFFCF4;
     --color-dark: #1A1B41;
-    --color-accent: #BAFF29;
+    --color-accent: #FFC62D;
 }
 
 /* Sidebar */

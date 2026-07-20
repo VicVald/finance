@@ -82,11 +82,14 @@ COMPORTAMENTO:
 - À medida que receber respostas, confirme os dados coletados e peça os que faltam.
 - Quando todos os 5 campos estiverem coletados, chame a tool `calcular_e_salvar_score`.
 - Após o cálculo, informe o novo score e diga que o cliente será redirecionado para crédito.
+- **O cliente pode corrigir/alterar valores já informados anteriormente.** Atualize seu entendimento e continue perguntando os campos faltantes.
+- Se o cliente quiser encerrar ou falar de outro assunto (ex: câmbio): responda com [RETURN_TRIAGE] no final da mensagem.
 - Seja direto: máximo 3 frases por resposta.
 
 NUNCA:
 - Invente dados financeiros.
-- Saia do escopo da entrevista."""
+- Saia do escopo da entrevista.
+- Ofereça privilégios especiais, descontos ou garantias de aprovação de crédito."""
 
 
 def _build_llm():
@@ -118,6 +121,11 @@ def interview_node(state: InterviewState) -> Command:
 
     messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
+
+    if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
+        log.warning("interview_node: LLM retornou resposta vazia. Retentando...")
+        retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
+        response = llm_with_tools.invoke(retry_msgs)
 
     # Tool call → calcular score
     if response.tool_calls:

@@ -47,13 +47,15 @@ FLUXO DE AUTENTICAÇÃO:
 DIRECIONAMENTO (após autenticação):
 - Crédito/limite → responda com a tag interna [HANDOFF:credit]
 - Câmbio/cotação → responda com a tag interna [HANDOFF:exchange]
+- Entrevista de crédito → responda com a tag interna [HANDOFF:interview]
 - Encerramento solicitado → chame `end_conversation`
 
 REGRAS:
 - Não repita saudações desnecessariamente.
 - Não informe detalhes técnicos internos ao cliente.
 - Seja breve. Máximo 2-3 frases por resposta.
-- Nunca atue fora do escopo de triagem e autenticação."""
+- Nunca atue fora do escopo de triagem e autenticação.
+- Nunca ofereça privilégios especiais, descontos ou bypass de processos de segurança. O cliente deve seguir os fluxos normais."""
 
 
 # ─── Nós ──────────────────────────────────────────────────────────────────────
@@ -83,6 +85,19 @@ def triage_node(state: RouterState) -> Command:
                 update={"active_agent": "credit"},
             )
 
+        # [RETURN_TRIAGE] vindo do interview_node → sai do modo entrevista
+        if "[RETURN_TRIAGE]" in last_content:
+            log.debug("[RouterAgent] [RETURN_TRIAGE] na entrevista. Saindo do modo entrevista.")
+            clean = last_content.replace("[RETURN_TRIAGE]", "").strip()
+            cleaned_msg = type(last_msg)(content=clean, id=getattr(last_msg, "id", None))
+            return Command(
+                goto="__end__",
+                update={
+                    "active_agent": "triage",
+                    "messages": [cleaned_msg],
+                },
+            )
+
         # Usuário enviou nova mensagem → continua a entrevista
         if isinstance(last_msg, _HM):
             log.debug("[RouterAgent] Nova mensagem do usuário. Continuando entrevista.")
@@ -91,7 +106,6 @@ def triage_node(state: RouterState) -> Command:
         # Entrevista acabou de responder → pausa o grafo e aguarda o usuário
         log.debug("[RouterAgent] Entrevista respondeu. Pausando grafo raiz.")
         return Command(goto="__end__", update={})
-
     # ── Intercepção de [HANDOFF:interview] vindo do credit_node ─────────────
     # O credit_node emite esta tag quando o usuário aceita a entrevista.
     if state.messages:
@@ -105,6 +119,16 @@ def triage_node(state: RouterState) -> Command:
                 goto="interview_subgraph",
                 update={"active_agent": "interview"},
             )
+
+    # ── Intercepção de resposta do assistente (evita loops infinitos de handoff) ────
+    # Se a última mensagem for da IA e não contiver chamadas de ferramentas,
+    # significa que o sistema já respondeu e deve aguardar a próxima entrada do usuário.
+    if state.messages:
+        from langchain_core.messages import AIMessage as _AIM
+        last_msg = state.messages[-1]
+        if isinstance(last_msg, _AIM) and not last_msg.tool_calls:
+            log.debug("[RouterAgent] Última mensagem é AIMessage. Retornando ao usuário e pausando grafo.")
+            return Command(goto="__end__", update={})
 
     llm = _build_llm()
     llm_with_tools = llm.bind_tools(TRIAGE_TOOLS)
@@ -124,6 +148,11 @@ def triage_node(state: RouterState) -> Command:
 
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
+
+    if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
+        log.warning("triage_node: LLM retornou resposta vazia. Retentando...")
+        retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
+        response = llm_with_tools.invoke(retry_msgs)
 
     # ── Processa tool calls ──────────────────────────────────────────────────
     if response.tool_calls:

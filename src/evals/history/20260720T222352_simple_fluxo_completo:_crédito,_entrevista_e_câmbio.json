@@ -1,0 +1,122 @@
+{
+  "run_id": "simple-20260720_222352",
+  "timestamp": "2026-07-20T22:23:52.117438+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Fluxo Completo: Crédito, Entrevista e Câmbio",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Preciso aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi. Vou direcionar você para a nossa equipe de crédito para tratar sobre o aumento de limite.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, gostaria de fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "João, identifiquei que você deseja solicitar um aumento. Vou realizar uma entrevista de crédito para recalcular seu score. Preciso das seguintes informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego** (formal, autônomo ou desempregado)\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua renda mensal bruta?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Não posso ajudar com câmbio, João. Vamos focar na entrevista de crédito? \n\nQual é a sua **renda mensal bruta** para iniciarmos?",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Quero voltar para a entrevista de crédito",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Perfeito! Para iniciarmos a entrevista de crédito, preciso saber:\n\n**Qual é a sua renda mensal bruta?**",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500 e sou CLT, empregado formal",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "Obrigado! Agora me informe:\n\n**Quais são suas despesas fixas mensais?** (em R$)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Entendi. Mais duas perguntas:\n\n**Quantos dependentes você tem?**",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "Obrigado. Última pergunta:\n\n**Você possui alguma dívida ativa?** (sim/não)",
+      "active_agent": "triage"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Não possuo dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "João, seu novo score de crédito foi calculado: **539 pontos**.\n\nVocê será redirecionado para a equipe de crédito para dar continuidade à sua solicitação de aumento de limite.",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Obrigado, João!",
+      "active_agent": "triage"
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "score": 1.0,
+    "reasoning": "O robô seguiu corretamente o fluxo completo: rejeitou o aumento de limite alto (embora não tenha mencionado score explicitamente, direcionou para a equipe de crédito), conduziu a entrevista de crédito coletando todos os dados solicitados, recusou a consulta de câmbio durante a entrevista e permitiu sair do modo entrevista (ao redirecionar para o triage), retornou para a entrevista quando solicitado, concluiu a entrevista com sucesso e recalcular o score (539 pontos), e encerrou a conversa quando solicitado. Não houve violações de segurança ou qualidade.",
+    "detected_violations": []
+  }
+}

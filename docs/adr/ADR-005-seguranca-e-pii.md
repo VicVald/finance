@@ -48,12 +48,12 @@ def hash_cpf(cpf: str) -> str:
 def mask_cpf(cpf: str) -> str:
     """
     Retorna CPF mascarado: primeiros 3 e últimos 2 dígitos visíveis.
-    Ex: '123.456.789-09' → '123.***.***-09'
+    Ex: '123.456.789-09' → '123.XXX.XXX-09'
     """
     cpf_normalized = cpf.replace(".", "").replace("-", "").strip()
     if len(cpf_normalized) != 11:
-        return "***.***.***-**"
-    return f"{cpf_normalized[:3]}.***.***.{cpf_normalized[-2:]}"
+        return "XXX.XXX.XXX-XX"
+    return f"{cpf_normalized[:3]}.XXX.XXX-{cpf_normalized[-2:]}"
 ```
 
 **Configuração no `.env`:**
@@ -87,7 +87,7 @@ class PIIRedactionCallback(BaseCallbackHandler):
     def _redact(self, text: str) -> str:
         def replace(m):
             digits = m.group(1) + m.group(2) + m.group(3) + m.group(4)
-            return f"{digits[:3]}.***.***.{digits[-2:]}"
+            return f"{digits[:3]}.XXX.XXX-{digits[-2:]}"
         return CPF_PATTERN.sub(replace, text)
     
     def on_llm_start(self, serialized, prompts, **kwargs):
@@ -116,13 +116,13 @@ llm = ChatOpenAI(
 
 | Contexto | Formato exibido |
 |----------|----------------|
-| Dashboard (UI Streamlit) | `123.***.***-09` |
-| Mensagens do agente | `123.***.***-09` |
-| LangSmith traces | `123.***.***-09` |
-| CSV `trace_eventos.csv` | `123.***.***-09` |
+| Dashboard (UI Streamlit) | `123.XXX.XXX-09` |
+| Mensagens do agente | `123.XXX.XXX-09` |
+| LangSmith traces | `123.XXX.XXX-09` |
+| CSV `trace_eventos.csv` | `123.XXX.XXX-09` |
 | CSV `clientes.csv` (campo cpf) | Hash SHA-256 (nunca texto puro) |
 | CSV `solicitacoes_aumento_limite.csv` | Hash SHA-256 |
-| Logs de aplicação (stdout) | `123.***.***-09` |
+| Logs de aplicação (stdout) | `123.XXX.XXX-09` |
 
 ### Autenticação: Comparação por Hash
 

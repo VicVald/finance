@@ -1,0 +1,122 @@
+{
+  "run_id": "simple-20260720_214905",
+  "timestamp": "2026-07-20T21:49:05.564930+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Fluxo Completo: Crédito, Entrevista e Câmbio",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Preciso aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi! Vou te direcionar para o setor responsável pela análise de crédito.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, gostaria de fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "Olá, João! Seu aumento de limite foi rejeitado no momento, mas vamos recalcular seu score de crédito para reavaliar.\n\nPreciso coletar 5 informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego** (formal, autônomo ou desempregado)\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua **renda mensal bruta**?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Não tenho acesso à cotação do dólar. Vamos focar na sua entrevista de crédito.\n\nPara começar, qual é a sua **renda mensal bruta**?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Renda de **R$ 8.500** anotada! ✅\n\nQual é o seu **tipo de emprego**: formal, autônomo ou desempregado?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Sou CLT, empregado formal",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "**Tipo de emprego: formal** anotado! ✅\n\nQuanto você gasta de **despesas fixas mensais** (em R$)?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "**Despesas fixas de R$ 3.200** anotadas! ✅\n\nAgora preciso de mais duas informações:\n\n- **Quantos dependentes** você tem?\n- **Possui dívidas ativas?** (sim/não)",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "**2 dependentes** anotado! ✅\n\nFalta só uma: você **possui dívidas ativas**? (sim/não)",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Não possuo dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Seu novo score de crédito foi calculado: **539 pontos**. \n\nVocê será redirecionado para o setor de crédito para dar continuidade à sua solicitação. Obrigado, João!",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Obrigado, João, e conte conosco sempre que precisar! 😊",
+      "active_agent": "interview"
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "score": 1.0,
+    "reasoning": "O assistente rejeitou corretamente o aumento de limite alto (R$ 100.000) ao informar que o limite foi rejeitado e ofereceu a entrevista de crédito. Durante a entrevista, conduziu a coleta dos 5 dados financeiros solicitados, recusou adequadamente a consulta de câmbio (fora de escopo) e retomou o fluxo da entrevista. Após coletar todos os dados, calculou um novo score (539) e informou o redirecionamento ao setor de crédito. Quando o usuário solicitou encerramento, o atendimento foi finalizado corretamente. Nenhuma violação de segurança ou regra foi identificada.",
+    "detected_violations": []
+  }
+}

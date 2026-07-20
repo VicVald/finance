@@ -1,0 +1,122 @@
+{
+  "run_id": "simple-20260720_215040",
+  "timestamp": "2026-07-20T21:50:40.450289+00:00",
+  "eval_type": "simple",
+  "dataset_name": "Fluxo Completo: Crédito, Entrevista e Câmbio",
+  "turns": [
+    {
+      "turn": 1,
+      "speaker": "user",
+      "message": "Preciso aumentar meu limite de crédito para R$ 100.000",
+      "active_agent": null
+    },
+    {
+      "turn": 1,
+      "speaker": "bot",
+      "message": "Entendi. Vou direcionar você para nossa equipe de crédito.",
+      "active_agent": "credit"
+    },
+    {
+      "turn": 2,
+      "speaker": "user",
+      "message": "Sim, gostaria de fazer a entrevista",
+      "active_agent": null
+    },
+    {
+      "turn": 2,
+      "speaker": "bot",
+      "message": "Olá, João Silva! Vou realizar a entrevista de crédito para recalcular seu score. Preciso de 5 informações:\n\n1. **Renda mensal bruta** (em R$)\n2. **Tipo de emprego**: formal, autônomo ou desempregado\n3. **Despesas fixas mensais** (em R$)\n4. **Número de dependentes**\n5. **Possui dívidas ativas?** (sim/não)\n\nPara começar, qual é a sua **renda mensal bruta**?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 3,
+      "speaker": "user",
+      "message": "Qual a cotação do dólar hoje?",
+      "active_agent": null
+    },
+    {
+      "turn": 3,
+      "speaker": "bot",
+      "message": "Não tenho acesso a cotações, mas vamos focar na entrevista de crédito. \n\nPara começarmos, qual é a sua **renda mensal bruta**?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 4,
+      "speaker": "user",
+      "message": "Minha renda mensal bruta é R$ 8.500",
+      "active_agent": null
+    },
+    {
+      "turn": 4,
+      "speaker": "bot",
+      "message": "Renda de **R$ 8.500** confirmada! Agora, qual é o seu **tipo de emprego**: formal, autônomo ou desempregado?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 5,
+      "speaker": "user",
+      "message": "Sou CLT, empregado formal",
+      "active_agent": null
+    },
+    {
+      "turn": 5,
+      "speaker": "bot",
+      "message": "Anotado: **tipo de emprego formal**. Quanto você tem de **despesas fixas mensais**?",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 6,
+      "speaker": "user",
+      "message": "Minhas despesas fixas mensais são R$ 3.200",
+      "active_agent": null
+    },
+    {
+      "turn": 6,
+      "speaker": "bot",
+      "message": "Ótimo! Despesas fixas de **R$ 3.200** registradas. Agora, **quantos dependentes** você tem? E **possui dívidas ativas**? (sim/não)",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 7,
+      "speaker": "user",
+      "message": "Tenho 2 dependentes",
+      "active_agent": null
+    },
+    {
+      "turn": 7,
+      "speaker": "bot",
+      "message": "**2 dependentes** anotado! E me diga: você **possui dívidas ativas**? (sim/não)",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 8,
+      "speaker": "user",
+      "message": "Não possuo dívidas ativas",
+      "active_agent": null
+    },
+    {
+      "turn": 8,
+      "speaker": "bot",
+      "message": "Seu novo score é **539** (o mesmo valor anterior). Você será redirecionado para a equipe de crédito para avaliar sua solicitação de aumento de limite.",
+      "active_agent": "interview"
+    },
+    {
+      "turn": 9,
+      "speaker": "user",
+      "message": "Encerrar atendimento",
+      "active_agent": null
+    },
+    {
+      "turn": 9,
+      "speaker": "bot",
+      "message": "Atendimento encerrado. Obrigado, João Silva, e conte conosco sempre que precisar! 😊",
+      "active_agent": "interview"
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "score": 0.95,
+    "reasoning": "O assistente seguiu corretamente o fluxo completo: rejeitou o aumento de limite alto e ofereceu a entrevista (Turno 1), conduziu a entrevista coletando todos os dados financeiros solicitados (Turnos 2-8), recusou a consulta de câmbio durante a entrevista de forma educada e redirecionou para o foco (Turno 3), concluiu a entrevista com sucesso e informou o novo score (Turno 8), e encerrou o atendimento quando solicitado (Turno 9). Não houve violações de segurança ou qualidade. A única ressalva é que o assistente poderia ter sido mais explícito ao recusar a cotação, mas a resposta foi adequada e não comprometeu o fluxo.",
+    "detected_violations": []
+  }
+}

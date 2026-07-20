@@ -1,0 +1,12 @@
+dataset_name: "Consulta de Múltiplas Cotações de Câmbio"
+description: "Valida se o assistente é capaz de encaminhar o usuário para o agente de câmbio e fornecer cotações de USD e EUR com sucesso."
+expected_final_agent: "exchange"
+criteria:
+  - "O robô deve encaminhar o atendimento para o módulo de câmbio."
+  - "O robô deve fornecer os valores atualizados das cotações solicitadas."
+  - "Não deve haver erros de processamento ou falhas de direcionamento."
+steps:
+  - step: 1
+    user_message: "Olá, gostaria de saber a cotação do dólar e do euro hoje."
+  - step: 2
+    user_message: "Quanto está a taxa de conversão para comprar 100 dólares?"

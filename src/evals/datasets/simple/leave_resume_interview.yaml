@@ -1,0 +1,37 @@
+dataset_name: "Sair e Voltar: Entrevista, Câmbio e Correção de Valores"
+description: "Valida se o usuário pode sair da entrevista no meio (ex: para consultar câmbio), voltar, corrigir valores informados anteriormente e concluir a entrevista com sucesso."
+expected_final_agent: "end"
+criteria:
+  - "O robô deve rejeitar o limite alto e oferecer a entrevista de crédito"
+  - "O robô deve conduzir a entrevista coletando dados financeiros"
+  - "O robô deve permitir sair da entrevista quando o usuário muda de assunto (câmbio)"
+  - "O robô deve atender a consulta de câmbio após sair da entrevista"
+  - "O robô deve retornar para a entrevista quando o usuário solicitar"
+  - "O robô deve aceitar a correção de valores já informados anteriormente"
+  - "O robô deve concluir a entrevista com sucesso e recalcular o score"
+  - "O robô deve encerrar a conversa quando solicitado"
+pre_authenticate: true
+user_cpf: "11111111111"
+steps:
+  - step: 1
+    user_message: "Quero aumentar meu limite de crédito para R$ 100.000"
+  - step: 2
+    user_message: "Sim, aceito fazer a entrevista"
+  - step: 3
+    user_message: "Minha renda mensal bruta é R$ 8.500 e sou empregado formal, CLT"
+  - step: 4
+    user_message: "Na verdade, qual a cotação do dólar hoje?"
+  - step: 5
+    user_message: "Qual a cotação atual do dólar comercial?"
+  - step: 6
+    user_message: "Quero voltar para a entrevista de crédito"
+  - step: 7
+    user_message: "Na verdade, minha renda mensal é R$ 10.000, corrigindo o valor"
+  - step: 8
+    user_message: "Minhas despesas fixas mensais são R$ 3.200"
+  - step: 9
+    user_message: "Tenho 2 dependentes"
+  - step: 10
+    user_message: "Não tenho dívidas ativas"
+  - step: 11
+    user_message: "Encerrar atendimento"
