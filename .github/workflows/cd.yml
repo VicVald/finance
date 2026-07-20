@@ -1,0 +1,70 @@
+name: CD — Deploy OCI
+
+on:
+  push:
+    branches: [main, master]
+
+# Garante que apenas um deploy rode por vez
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy via SSH na OCI
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.OCI_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.OCI_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copiar arquivos para a OCI via rsync
+        run: |
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='.venv/' \
+            --exclude='__pycache__/' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='.pytest_cache/' \
+            --exclude='app.log' \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:~/banco-agil/
+
+      - name: Criar arquivo .env na OCI
+        run: |
+          ssh -i ~/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} \
+            "cat > ~/banco-agil/.env << 'EOF'
+          FERNET_SECRET_KEY=${{ secrets.FERNET_SECRET_KEY }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_BASE_URL=${{ secrets.OPENROUTER_BASE_URL }}
+          OPENROUTER_MODEL=${{ secrets.OPENROUTER_MODEL }}
+          LANGSMITH_TRACING=${{ secrets.LANGSMITH_TRACING }}
+          LANGSMITH_API_KEY=${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}
+          EOF"
+
+      - name: Subir containers com docker-compose
+        run: |
+          ssh -i ~/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} \
+            "cd ~/banco-agil && docker compose pull 2>/dev/null || true && docker compose up --build -d --remove-orphans"
+
+      - name: Verificar saúde dos containers
+        run: |
+          ssh -i ~/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} \
+            "cd ~/banco-agil && docker compose ps"

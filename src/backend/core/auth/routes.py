@@ -28,8 +28,16 @@ class TokenResponse(BaseModel):
 class RefreshRequest(BaseModel):
     refresh_token: str
 
+class RegisterRequest(BaseModel):
+    nome: str = Field(..., description="Nome Completo")
+    cpf: str = Field(..., description="CPF do cliente")
+    data_nascimento: str = Field(..., description="Data de Nascimento")
+    email: str = Field(..., description="E-mail")
+    senha: str = Field(..., description="Senha")
+
 class UserMeResponse(BaseModel):
     cpf_hash: str
+    cpf_mask: str
     nome: str
     limite_atual: float
     score: int
@@ -45,6 +53,7 @@ def get_user_by_credentials(email: str, senha: str) -> Optional[dict]:
             if row["email"].strip().lower() == email.strip().lower() and row["senha"].strip() == senha.strip():
                 return {
                     "cpf_hash": row["cpf_hash"],
+                    "cpf_mask": row.get("cpf_mask", "***.***.***-**"),
                     "nome": row["nome"],
                     "limite_atual": float(row["limite_atual"]),
                     "score": int(row["score"])
@@ -60,6 +69,7 @@ def get_user_by_hash(cpf_hash: str) -> Optional[dict]:
             if row["cpf_hash"] == cpf_hash:
                 return {
                     "cpf_hash": row["cpf_hash"],
+                    "cpf_mask": row.get("cpf_mask", "***.***.***-**"),
                     "nome": row["nome"],
                     "limite_atual": float(row["limite_atual"]),
                     "score": int(row["score"])
@@ -125,3 +135,30 @@ def refresh(req: RefreshRequest):
 @router.get("/me", response_model=UserMeResponse)
 def me(current_user: dict = Depends(get_current_user)):
     return current_user
+
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+def register(req: RegisterRequest):
+    cpf_hash = hash_cpf(req.cpf)
+    
+    # Import the masking function
+    from utils.pii import mask_cpf
+    masked = mask_cpf(req.cpf)
+    
+    # Valida se já existe
+    if get_user_by_hash(cpf_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="CPF já cadastrado."
+        )
+        
+    try:
+        with open(settings.CLIENTES_CSV, mode="a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            # cpf_hash,cpf_mask,nome,data_nascimento,limite_atual,score,email,senha
+            writer.writerow([cpf_hash, masked, req.nome, req.data_nascimento, "0.0", "300", req.email, req.senha])
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erro ao cadastrar cliente."
+        )
+    return {"message": "Usuário cadastrado com sucesso!"}

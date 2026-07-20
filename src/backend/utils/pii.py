@@ -21,5 +21,5 @@ def mask_cpf(cpf: str) -> str:
     """
     cpf_normalized = cpf.replace(".", "").replace("-", "").strip()
     if len(cpf_normalized) != 11:
-        return "***.***.***-**"
-    return f"{cpf_normalized[:3]}.***.***-{cpf_normalized[-2:]}"
+        return "XXX.XXX.XXX-XX"
+    return f"{cpf_normalized[:3]}.XXX.XXX-{cpf_normalized[-2:]}"
