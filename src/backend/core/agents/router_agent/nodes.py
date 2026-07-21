@@ -138,7 +138,7 @@ def triage_node(state: RouterState) -> Command:
             },
         )
 
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages[-6:])
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):

@@ -33,27 +33,26 @@ jobs:
             --exclude='.venv/' \
             --exclude='__pycache__/' \
             --exclude='*.pyc' \
-            --exclude='.env' \
             --exclude='.pytest_cache/' \
             --exclude='app.log' \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./ ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:~/banco-agil/
 
-      - name: Criar arquivo .env na OCI
-        run: |
-          ssh -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} \
-            "cat > ~/banco-agil/.env << 'EOF'
-          FERNET_SECRET_KEY=${{ secrets.FERNET_SECRET_KEY }}
-          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_BASE_URL=${{ secrets.OPENROUTER_BASE_URL }}
-          OPENROUTER_MODEL=${{ secrets.OPENROUTER_MODEL }}
-          LANGSMITH_TRACING=${{ secrets.LANGSMITH_TRACING }}
-          LANGSMITH_API_KEY=${{ secrets.LANGSMITH_API_KEY }}
-          LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}
-          EOF"
+      # - name: Criar arquivo .env na OCI
+      #   run: |
+      #     ssh -i ~/.ssh/id_rsa \
+      #       -o StrictHostKeyChecking=no \
+      #       ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} \
+      #       "cat > ~/banco-agil/.env << 'EOF'
+      #     FERNET_SECRET_KEY=${{ secrets.FERNET_SECRET_KEY }}
+      #     JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+      #     OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
+      #     OPENROUTER_BASE_URL=${{ secrets.OPENROUTER_BASE_URL }}
+      #     OPENROUTER_MODEL=${{ secrets.OPENROUTER_MODEL }}
+      #     LANGSMITH_TRACING=${{ secrets.LANGSMITH_TRACING }}
+      #     LANGSMITH_API_KEY=${{ secrets.LANGSMITH_API_KEY }}
+      #     LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}
+      #     EOF"
 
       - name: Subir containers com docker-compose
         run: |

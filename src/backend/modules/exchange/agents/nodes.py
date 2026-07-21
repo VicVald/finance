@@ -44,7 +44,7 @@ def exchange_node(state: ExchangeState) -> Command:
     llm = _build_llm()
     llm_with_tools = llm.bind_tools(EXCHANGE_TOOLS)
 
-    messages = [SystemMessage(content=EXCHANGE_SYSTEM_PROMPT)] + list(state.messages[-6:])
+    messages = [SystemMessage(content=EXCHANGE_SYSTEM_PROMPT)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):

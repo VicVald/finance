@@ -111,7 +111,7 @@ def interview_node(state: InterviewState) -> Command:
     if collected:
         system_content += f"\n\nDados já coletados: {collected}"
 
-    messages = [SystemMessage(content=system_content)] + list(state.messages[-6:])
+    messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):

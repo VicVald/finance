@@ -54,7 +54,7 @@ def credit_node(state: CreditState) -> Command:
     if state.cliente_nome:
         system_content += f"\nNome: {state.cliente_nome}"
 
-    messages = [SystemMessage(content=system_content)] + list(state.messages[-6:])
+    messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
