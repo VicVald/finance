@@ -14,20 +14,26 @@ from langchain_core.messages import AIMessage, HumanMessage
 class TestCreditFlowFixes:
     """Testa se o router força handoff para credit e se a IA pergunta por aumento pós-entrevista."""
 
+    @patch("modules.credit.agents.interview_agent.nodes._build_llm")
     @patch("core.agents.router_agent.nodes._build_llm")
-    def test_router_forces_credit_subgraph_even_if_llm_says_interview(self, mock_build_llm):
+    def test_router_forces_credit_subgraph_even_if_llm_says_interview(self, mock_triage_llm, mock_interview_llm):
         """Mesmo que a IA do router mencione entrevista, a rota de crédito deve ser acionada."""
         from core.agents.router_agent.nodes import triage_node
         from core.agents.router_agent.state import RouterState
 
-        mock_llm = mock_build_llm.return_value
-        mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
+        mock_triage = mock_triage_llm.return_value
+        mock_triage.bind_tools.return_value.invoke.return_value = AIMessage(
             content="",
             tool_calls=[{
                 "name": "transfer_to_interview",
                 "args": {},
                 "id": "call_transfer_interview"
             }]
+        )
+
+        mock_interview = mock_interview_llm.return_value
+        mock_interview.bind_tools.return_value.invoke.return_value = AIMessage(
+            content="Olá! Vamos iniciar a sua entrevista de crédito."
         )
 
         state = RouterState(
@@ -38,7 +44,7 @@ class TestCreditFlowFixes:
         )
 
         res = triage_node(state)
-        # Deve ir para interview_subgraph, não credit_subgraph
+        # Deve direcionar para interview_subgraph e definir active_agent como interview
         assert res.goto == "interview_subgraph"
         assert res.update["active_agent"] == "interview"
 
@@ -50,7 +56,7 @@ class TestCreditFlowFixes:
 
         mock_llm = mock_build_llm.return_value
         mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
-            content="Seu novo score é 899. Gostaria de solicitar um aumento de limite de crédito agora?"
+            content="Seu novo score é 899. Qual é o novo limite de crédito que você deseja solicitar?"
         )
 
         history = [
@@ -68,4 +74,4 @@ class TestCreditFlowFixes:
 
         res = credit_node(state)
         assert res.goto == "__end__"
-        assert "aumento de limite" in res.update["messages"][0].content.lower()
+        assert "novo limite de crédito" in res.update["messages"][0].content.lower()
