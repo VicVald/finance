@@ -106,13 +106,12 @@ O Banco Ágil é uma solução de demonstração (PoC) que implementa:
 
 O arquivo contém usuários de teste com dados hashados. Para usar os usuários de exemplo:
 
-| Cliente | CPF (mascarado) | Data Nascimento | Limite Atual | Score | Status |
-|---------|-----------------|-----------------|--------------|-------|--------|
-| João Silva | 123.XXX.XXX-11 | 15/05/1990 | R$ 5.000 | 800 | ✓ Ativo |
-| Maria Oliveira | 456.XXX.XXX-78 | 20/10/1985 | R$ 1.500 | 450 | ✓ Ativo |
-| Pedro Santos | 789.XXX.XXX-56 | 03/03/1995 | R$ 500 | 300 | ✓ Ativo |
-| Ana Costa | 987.XXX.XXX-65 | 12/12/1988 | R$ 12.000 | 950 | ✓ Ativo |
-| Victor Monteiro | 383.XXX.XXX-03 | 06/03/2006 | R$ 0 | 299 | ⚠️ Sem limite |
+| Cliente | CPF | Data Nascimento |
+|---------|-----------------|-----------------|
+| João Silva | 11111111111 | 15/05/1990 
+| Maria Oliveira | 22222222222 | 20/10/1985 
+| Pedro Santos | 33333333333 | 03/03/1995 
+| Ana Costa | 44444444444 | 12/12/1988 
 
 **Como fazer login com esses usuários:**
 
@@ -145,19 +144,30 @@ O score é recalculado pelo **Agente de Entrevista Financeira** baseado em:
 
 ## 🚀 Como Usar
 
+### ⚙️ Variáveis de Ambiente
+
+Antes de iniciar o projeto, crie o arquivo `.env` a partir do template:
+
+```bash
+cp .env.example .env
+```
+
+Variáveis cruciais para o funcionamento:
+- `OPENROUTER_API_KEY` (ou `OPENAI_API_KEY`): Obrigatório para o funcionamento do LLM.
+- `BACKEND_URL`: A URL do backend que a UI vai consumir.
+  - Se rodar **Localmente**: `http://localhost:8000`
+  - Se rodar via **Docker**: `http://backend:8000` (utilizando a rede interna do Docker).
+- **Integração com LangSmith** (Opcional, mas recomendado para evals/tracing):
+  - `LANGSMITH_TRACING=true`
+  - `LANGSMITH_API_KEY=sua_chave`
+  - `LANGSMITH_PROJECT="Finance"`
+
 ### Opção 1: Com Docker Compose (Recomendado)
 
 ```bash
-# 1. Clone o repositório e entre no diretório
-cd finance
+# 1. Configure as variáveis de ambiente (conforme acima)
 
-# 2. Configure as variáveis de ambiente
-cp .env.example .env
-# Edite .env e preencha suas chaves:
-#   OPENROUTER_API_KEY=sua_chave_aqui
-#   JWT_SECRET_KEY=chave_secreta_forte
-
-# 3. Build e inicie os containers
+# 2. Build e inicie os containers
 docker-compose up --build
 
 # Backend: http://localhost:8000
@@ -279,7 +289,17 @@ finance/
 
 ## 🧪 Testando o Sistema
 
-### 1. Teste de Autenticação
+### 1. Testes Automatizados (pytest)
+
+Para executar a suíte de testes unitários e de integração de regras de negócio (desenvolvimento orientado a TDD):
+
+```bash
+uv run pytest
+```
+
+Isso verificará as regras de handoff, cálculos de score de crédito, manipulação de PII e persistência de limite.
+
+### 2. Teste de Autenticação
 
 ```
 1. Abra http://localhost:8501
@@ -290,14 +310,14 @@ finance/
    - Senha: Qualquer uma (validação atual: CPF + data)
 ```
 
-### 2. Teste de Consulta de Limite
+### 3. Teste de Consulta de Limite
 
 ```
 Cliente: "Qual é meu limite de crédito?"
 Agente de Crédito: "Seu limite atual é R$ 5.000"
 ```
 
-### 3. Teste de Handoff para Câmbio
+### 4. Teste de Handoff para Câmbio
 
 ```
 Cliente: "Qual é a cotação do dólar?"
@@ -305,7 +325,7 @@ Router: Detecta intenção → Câmbio
 Agente de Câmbio: Retorna cotação USD/BRL atualizada
 ```
 
-### 4. Teste de Aumento de Limite Rejeitado → Entrevista
+### 5. Teste de Aumento de Limite Rejeitado → Entrevista
 
 ```
 Cliente com score baixo (ex: Victor): "Gostaria de aumentar meu limite"
@@ -317,7 +337,7 @@ Agente: Faz perguntas, recalcula score
 Se score ↑: Agente de Crédito aprova aumento
 ```
 
-### 5. Suíte de Avaliações (Evals)
+### 6. Suíte de Avaliações (Evals)
 
 O sistema possui uma suíte automatizada de evals em `src/evals/` que testa cenários reais de interação com o LLM:
 
