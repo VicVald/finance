@@ -2,7 +2,7 @@
 
 ## 💡 Ideia do Projeto
 
-O **Banco Ágil** é uma Prova de Conceito (PoC) técnica projetada para validar a viabilidade de um sistema de atendimento bancário inteligente, hiper-personalizado e autônomo. A ideia central é explorar a orquestração de múltiplos agentes de IA especializados que colaboram de forma fluida para resolver demandas do usuário (como análises de crédito, reavaliações financeiras interativas e cotações de câmbio). O sistema vai muito além de um simples chatbot de perguntas e respostas, atuando como um ecossistema capaz de lidar com transições de estado complexas (handoffs) e tomada de decisão embutida.
+O **Banco Ágil** é uma Prova de Conceito (PoC) técnica projetada para validar a viabilidade de um sistema de atendimento bancário inteligente, personalizado e autônomo. A ideia central é explorar a orquestração de múltiplos agentes de IA especializados que colaboram de forma fluida para resolver demandas do usuário (como análises de crédito, reavaliações financeiras interativas e cotações de câmbio). O sistema vai muito além de um simples chatbot de perguntas e respostas, atuando como um ecossistema capaz de lidar com transições de estado complexas (handoffs) e tomada de decisão embutida.
 
 ## 🛠️ Stack Tecnológica
 
@@ -55,7 +55,6 @@ O sistema foi arquitetado visando forte tipagem, controle de orquestração e ob
 │  - clientes.csv (CPF hash, limites, scores)                 │
 │  - score_limite.csv (regras de limite por score)            │
 │  - solicitacoes_aumento_limite.csv (histórico)              │
-│  - trace_eventos.csv (auditoria de eventos)                 │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,7 +100,6 @@ O sistema foi arquitetado visando forte tipagem, controle de orquestração e ob
 7. ENCERRAMENTO
    Cliente → "Encerrar conversa"
    Router → Seta is_conversation_ended = True
-   Router → Registra evento em trace_eventos.csv
    Conversa encerrada
 ```
 
@@ -280,7 +278,6 @@ finance/
 │   │       ├── clientes.csv           # Base de clientes
 │   │       ├── score_limite.csv       # Regras de limite
 │   │       ├── solicitacoes_aumento_limite.csv
-│   │       └── trace_eventos.csv      # Auditoria
 │   └── ui/
 │       ├── streamlit_app.py           # Entry point Streamlit
 │       └── components/
@@ -381,6 +378,5 @@ Os cenários `/ai-battle` simulam ataques de red-teaming. Algumas falhas são co
 ### 6. Rastreabilidade
 
 - **LangSmith:** Acesse dashboard.smith.langchain.com para ver traces
-- **CSV Local:** Abra `src/backend/data/trace_eventos.csv` para auditoria
 
 
