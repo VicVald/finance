@@ -23,3 +23,6 @@ class CreditState(BaseModel):
 
     # Indica se a entrevista foi solicitada pelo fluxo (human-in-the-loop track)
     pediu_entrevista: Optional[bool] = None
+
+    # Indica se a entrevista de crédito foi concluída
+    entrevista_concluida: bool = False

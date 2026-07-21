@@ -101,3 +101,11 @@ def solicitar_aumento_limite(cpf_hash: str, novo_limite: float) -> dict:
         "novo_limite_solicitado": novo_limite,
         "score": score,
     }
+
+
+@tool
+def transfer_to_triage() -> str:
+    """
+    Transfere o atendimento de volta para a triagem geral (router) se o cliente quiser falar de outro assunto ou encerrar a conversa.
+    """
+    return "handoff_triage"

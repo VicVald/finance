@@ -15,7 +15,8 @@ from langgraph.prebuilt import ToolNode
 from langgraph.types import Command
 
 from utils.llm import build_llm
-from modules.credit.agents.interview_state import InterviewState
+from modules.credit.agents.interview_agent.state import InterviewState
+from modules.credit.agents.interview_agent.tools import transfer_to_triage
 from modules.credit.services import calcular_score_entrevista, atualizar_score_cliente
 
 log = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ def calcular_e_salvar_score(
     }
 
 
-INTERVIEW_TOOLS = [calcular_e_salvar_score]
+INTERVIEW_TOOLS = [calcular_e_salvar_score, transfer_to_triage]
 
 INTERVIEW_SYSTEM_PROMPT = """Você é o agente de entrevista de crédito do Banco Ágil.
 
@@ -82,7 +83,7 @@ COMPORTAMENTO:
 - Quando todos os 5 campos estiverem coletados, chame a tool `calcular_e_salvar_score`.
 - Após o cálculo, informe o novo score e diga que o cliente será redirecionado para crédito.
 - **O cliente pode corrigir/alterar valores já informados anteriormente.** Atualize seu entendimento e continue perguntando os campos faltantes.
-- Se o cliente quiser encerrar ou falar de outro assunto (ex: câmbio): responda com [RETURN_TRIAGE] no final da mensagem.
+- Se o cliente quiser encerrar ou falar de outro assunto (ex: câmbio): chame a ferramenta `transfer_to_triage`.
 - Seja direto: máximo 3 frases por resposta.
 
 NUNCA:
@@ -119,8 +120,22 @@ def interview_node(state: InterviewState) -> Command:
         retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
         response = llm_with_tools.invoke(retry_msgs)
 
-    # Tool call → calcular score
+    # Tool call → calcular score ou retornar para triagem
     if response.tool_calls:
+        for tc in response.tool_calls:
+            if tc.get("name") == "transfer_to_triage":
+                from langchain_core.messages import ToolMessage
+                tool_msg = ToolMessage(
+                    content="Transferido de volta para a triagem geral.",
+                    tool_call_id=tc.get("id"),
+                )
+                return Command(
+                    goto="__end__",
+                    update={
+                        "messages": [response, tool_msg],
+                        "active_agent": "triage",
+                    },
+                )
         return Command(goto="interview_tool_node", update={"messages": [response]})
 
     # Verifica se entrevista foi concluída (score calculado no histórico)
@@ -128,7 +143,7 @@ def interview_node(state: InterviewState) -> Command:
     if novo_score is not None:
         # Sinaliza ao triage (via tag na mensagem) que a entrevista terminou
         done_content = response.content if isinstance(response.content, str) else ""
-        done_msg = AIMessage(content=done_content + " [INTERVIEW_DONE]")
+        done_msg = AIMessage(content=done_content)
         return Command(
             goto="__end__",
             update={

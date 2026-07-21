@@ -8,8 +8,8 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
-from modules.credit.agents.interview_state import InterviewState
-from modules.credit.agents.interview_nodes import interview_node, interview_tool_node
+from modules.credit.agents.interview_agent.state import InterviewState
+from modules.credit.agents.interview_agent.nodes import interview_node, interview_tool_node
 
 
 class InterviewInputSchema(BaseModel):

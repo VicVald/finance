@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
-from modules.credit.agents.state import CreditState
-from modules.credit.agents.nodes import credit_node, credit_tool_node
+from modules.credit.agents.credit_agent.state import CreditState
+from modules.credit.agents.credit_agent.nodes import credit_node, credit_tool_node
 
 
 class CreditInputSchema(BaseModel):
@@ -20,6 +20,7 @@ class CreditInputSchema(BaseModel):
     cliente_nome: Optional[str] = None
     cliente_limite_atual: Optional[float] = None
     cliente_score_atual: Optional[int] = None
+    entrevista_concluida: bool = False
 
 
 def _setup_credit_node(state: CreditState) -> dict:
@@ -34,6 +35,11 @@ def _setup_credit_node(state: CreditState) -> dict:
     parent_score = getattr(state, "cliente_score_atual", None)
     if parent_score is not None:
         update["score_atual"] = parent_score
+        
+    # Mapeia se a entrevista foi concluída
+    parent_interview_done = getattr(state, "entrevista_concluida", False)
+    if parent_interview_done:
+        update["entrevista_concluida"] = parent_interview_done
         
     return update
 

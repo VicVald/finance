@@ -3,8 +3,8 @@ Exchange Subgraph — compilado sem checkpointer próprio.
 """
 from langgraph.graph import StateGraph, START, END
 
-from modules.exchange.agents.state import ExchangeState
-from modules.exchange.agents.nodes import exchange_node, exchange_tool_node
+from modules.exchange.agents.exchange_agent.state import ExchangeState
+from modules.exchange.agents.exchange_agent.nodes import exchange_node, exchange_tool_node
 
 
 def build_exchange_graph():
