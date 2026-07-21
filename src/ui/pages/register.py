@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import re
+import os
 from datetime import datetime
 from styles.theme import inject_styles
 
@@ -15,7 +16,8 @@ inject_styles()
 st.title("🏦 Banco Ágil")
 st.subheader("Cadastro de Novo Cliente")
 
-API_REGISTER = "http://localhost:8000/auth/register"
+API_BASE = os.getenv("BACKEND_URL", "http://localhost:8000")
+API_REGISTER = f"{API_BASE}/auth/register"
 
 def validate_cpf(cpf: str) -> bool:
     cpf_clean = re.sub(r"\D", "", cpf)

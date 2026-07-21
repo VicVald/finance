@@ -2,8 +2,9 @@ import streamlit as st
 import uuid
 import json
 import requests
+import os
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("BACKEND_URL", "http://localhost:8000")
 AUTH_REFRESH = f"{API_BASE}/auth/refresh"
 AGENT_STREAM = f"{API_BASE}/api/v1/agent/stream"
 AGENT_RESUME = f"{API_BASE}/api/v1/agent/resume"

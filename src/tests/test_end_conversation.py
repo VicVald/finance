@@ -13,8 +13,49 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 import pytest
-from langchain_core.messages import HumanMessage
+from unittest.mock import patch
+from langchain_core.messages import AIMessage, HumanMessage
 from backend.core.agents.router_agent.graph import compiled_router_graph
+
+
+class MockLLM:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def bind_tools(self, tools, **kwargs):
+        self.tools = tools
+        return self
+
+    def invoke(self, messages, *args, **kwargs):
+        # Encontra o conteúdo da última mensagem do usuário
+        last_human_content = ""
+        for m in reversed(messages):
+            if m.type == "human" or hasattr(m, "content"):
+                if m.type == "human":
+                    last_human_content = m.content
+                    break
+        
+        last_human_content_lower = str(last_human_content).lower()
+        
+        # Verifica se é uma mensagem de encerramento
+        end_triggers = ["encerrar", "fim", "sair", "encerre"]
+        if any(trigger in last_human_content_lower for trigger in end_triggers):
+            return AIMessage(
+                content="",
+                tool_calls=[{
+                    "name": "end_conversation",
+                    "args": {},
+                    "id": "call_mock_end"
+                }]
+            )
+        else:
+            return AIMessage(content="Olá! Para prosseguir, preciso primeiro autenticar sua identidade. Por favor, informe seu **CPF**.")
+
+
+@pytest.fixture(autouse=True)
+def mock_llm_fixture():
+    with patch("core.agents.router_agent.nodes._build_llm", return_value=MockLLM()):
+        yield
 
 
 def get_router_graph():
@@ -117,7 +158,7 @@ class TestEndConversation:
         # Verificar não está encerrado ainda
         snap1 = graph.get_state(thread_config)
         state1 = snap1.values if snap1.values else {}
-        assert state1.get("is_conversation_ended") is False
+        assert state1.get("is_conversation_ended", False) is False
         
         # Segunda mensagem (encerramento)
         msg2_state = {

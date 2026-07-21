@@ -10,8 +10,10 @@ import streamlit as st
 from styles.theme import inject_styles
 from components.user_card import render_user_card
 
+import os
+
 # ─── Config ───────────────────────────────────────────────────────────────────
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("BACKEND_URL", "http://localhost:8000")
 AUTH_LOGIN = f"{API_BASE}/auth/login"
 
 st.set_page_config(
