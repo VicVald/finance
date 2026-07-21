@@ -1,18 +1,23 @@
 # 🏦 Banco Ágil - Sistema Multi-Agentes de IA para Serviços Bancários
 
-Um sistema inteligente de atendimento bancário baseado em múltiplos agentes de IA especializados, orquestrados através de um roteador central. O sistema utiliza **LangGraph + LangChain** para construir uma experiência fluida onde cada agente é especialista em seu domínio.
+## 💡 Ideia do Projeto
 
-## 📋 Visão Geral do Projeto
+O **Banco Ágil** é uma Prova de Conceito (PoC) técnica projetada para validar a viabilidade de um sistema de atendimento bancário inteligente, hiper-personalizado e autônomo. A ideia central é explorar a orquestração de múltiplos agentes de IA especializados que colaboram de forma fluida para resolver demandas do usuário (como análises de crédito, reavaliações financeiras interativas e cotações de câmbio). O sistema vai muito além de um simples chatbot de perguntas e respostas, atuando como um ecossistema capaz de lidar com transições de estado complexas (handoffs) e tomada de decisão embutida.
 
-O Banco Ágil é uma solução de demonstração (PoC) que implementa:
+## 🛠️ Stack Tecnológica
 
-- ✅ **Autenticação segura** via login JWT + CPF + data de nascimento com JWT
-- ✅ **Múltiplos agentes especializados** (Crédito, Entrevista Financeira, Câmbio)
-- ✅ **Orquestração dinâmica** com handoff transparente entre agentes
-- ✅ **Rastreabilidade completa** via LangSmith + CSV de auditoria
-- ✅ **Proteção de dados** com masking de PII e hash SHA-256 para CPF
-- ✅ **Streaming de respostas** em tempo real via SSE
-- ✅ **Interface simplificada** em Streamlit
+O sistema foi arquitetado visando forte tipagem, controle de orquestração e observabilidade. As tecnologias principais são:
+
+- **LangGraph**: O núcleo da nossa orquestração. O LangGraph foi escolhido pela sua capacidade robusta de gerenciar fluxos complexos de interação através de grafos e subgrafos. Ele resolveu desafios inerentes de sistemas multi-agentes, facilitando imensamente o _handoff_ (transferência de responsabilidades e contexto entre agentes), a execução de _tool calling_ e a diferenciação visual e lógica dos passos tomados pela IA. Além disso, conta com integrações nativas fantásticas — especialmente com o LangSmith, conectando rastreabilidade de ponta a ponta de forma praticamente automática — e permitiu velocidade máxima na criação dos fluxos devido à sólida experiência da equipe com a ferramenta.
+- **Pydantic**: O backbone da estrutura de dados. O Pydantic é empregado extensivamente para aplicar tipagem forte no Python. Ele assegura que o estado (`state`) compartilhado entre os nós do grafo, as saídas e entradas do LLM (structured outputs) e as especificações de ferramentas sejam altamente confiáveis, validadas e parseadas corretamente antes que as regras de negócio sejam executadas.
+
+## 🎯 Principais Funcionalidades
+
+- ✅ **Múltiplos agentes especializados** (Triagem, Crédito, Entrevista Financeira e Câmbio) rodando em subgrafos isolados
+- ✅ **Orquestração avançada** com roteamento de continuidade e handoffs mantendo todo o histórico
+- ✅ **Autenticação segura** via JWT isolando as sessões dos usuários por CPF
+- ✅ **Proteção PII LGPD-compliant** utilizando hash SHA-256 e interceptação para mascaramento antes de chamar os LLMs
+- ✅ **Extensa Suíte de Evals** que valida o comportamento ético/segurança do LLM (evitando injeções) e regras vitais de negócio
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -229,19 +234,22 @@ cp .env.example .env
 
 O projeto segue a metodologia **Architecture Decision Records (ADR)** em `/docs/adr/`:
 
-| ADR | Título | Decisão |
+| ADR | Título | Resumo da Decisão |
 |-----|--------|---------|
-| ADR-001 | Arquitetura Geral | LangGraph + LangChain para orquestração multi-agentes |
-| ADR-002 | Orquestração e Handoff | Router central com subgraphs compilados por domínio |
-| ADR-003 | Gerenciamento de Estado | Pydantic BaseModel para validação de estados |
-| ADR-004 | Rastreabilidade | LangSmith + CSV local para auditoria |
-| ADR-005 | Segurança e PII | Hash SHA-256 + masking em middleware |
-| ADR-006 | Interface Streamlit | Componentes customizados para chat e métricas |
-| ADR-007 | Agente de Câmbio | BrasilAPI + AwesomeAPI com fallback |
-| ADR-008 | Autenticação JWT | Token-based com refresh token |
-| ADR-009 | Ajustes de Triage | Melhorias na detecção de intenção |
-| ADR-010 | Melhorias no Fluxo de Crédito | Aprovação direta baseada em regras, evitando entrevistas desnecessárias, com persistência no CSV |
-| ADR-011 | SSE Streaming Limpo | Filtragem de tags de controle (ex: `[HANDOFF:...]`) diretamente na camada de API para UI limpa |
+| ADR-001 | Arquitetura Geral de Agentes | LangGraph para orquestração modular de multi-agentes |
+| ADR-002 | Orquestração e Handoff | Router central delegando execuções para subgrafos por domínio |
+| ADR-003 | Gerenciamento de Estado | Pydantic como garantidor de validação e tipagem de estados |
+| ADR-004 | Rastreabilidade | Uso do LangSmith + logs CSV locais para auditoria das execuções |
+| ADR-005 | Segurança e PII | Ocultamento de CPF via middleware e armazenamento com SHA-256 |
+| ADR-006 | Interface Streamlit | Componentes customizados e SSE (Server-Sent Events) para streaming |
+| ADR-007 | Agente de Câmbio | Múltiplas APIs (BrasilAPI, AwesomeAPI) com mecânica de fallback |
+| ADR-008 | Autenticação JWT | Autenticação baseada em token validada no roteamento principal |
+| ADR-009 | Ajustes de Triage e Logs | Aprimoramento do prompt do LLM na detecção precisa da intenção |
+| ADR-010 | CI/CD com GitHub e OCI | Pipeline para testes automáticos, evals e empacotamento Docker |
+| ADR-011 | Sistema de Evaluations | Suíte de testes (TDD) focada em regras de negócio e comportamento |
+| ADR-012 | Handoff via Ferramentas | Transferência padronizada via invocação de tool explícita |
+| ADR-013 | Ajuste Roteamento Pós-Entrevista | Fim de grafo (`__end__`) imediato após recalcular o limite |
+| ADR-014 | Continuidade Active Agent | Roteamento passivo guiado unicamente pela variável `active_agent` |
 
 Leia os detalhes completos em `/docs/adr/`.
 
