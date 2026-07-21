@@ -8,11 +8,11 @@ from langgraph.types import Command
 
 from utils.llm import build_llm
 from modules.exchange.agents.exchange_agent.state import ExchangeState
-from modules.exchange.agents.exchange_agent.tools import consultar_cotacao, transfer_to_triage
+from modules.exchange.agents.exchange_agent.tools import consultar_cotacao
 
 log = logging.getLogger(__name__)
 
-EXCHANGE_TOOLS = [consultar_cotacao, transfer_to_triage]
+EXCHANGE_TOOLS = [consultar_cotacao]
 
 EXCHANGE_SYSTEM_PROMPT = """Você é o agente de câmbio do Banco Ágil.
 
@@ -25,7 +25,6 @@ REGRAS OBRIGATÓRIAS:
 - Você TEM acesso total a todas as cotações em tempo real através da ferramenta `consultar_cotacao`. Nunca diga que não tem acesso ou que não pode obter os dados.
 - Se o cliente pedir múltiplas moedas, chame a ferramenta para cada uma.
 - Após receber o resultado, apresente o valor de forma clara, incluindo o cálculo se o cliente perguntar por valores específicos (ex: "comprar 5000 USD" → "USD 5.000 × R$ 5,10 = R$ 25.500").
-- Se o cliente quiser encerrar ou falar de outro assunto: chame a ferramenta `transfer_to_triage`.
 - Seja breve: máximo 2-3 frases por resposta.
 
 NUNCA:
@@ -66,20 +65,6 @@ def exchange_node(state: ExchangeState) -> Command:
             response = llm_with_tools.invoke(retry_msgs)
 
     if response.tool_calls:
-        for tc in response.tool_calls:
-            if tc.get("name") == "transfer_to_triage":
-                from langchain_core.messages import ToolMessage
-                tool_msg = ToolMessage(
-                    content="Transferido de volta para a triagem geral.",
-                    tool_call_id=tc.get("id"),
-                )
-                return Command(
-                    goto="__end__",
-                    update={
-                        "messages": [response, tool_msg],
-                        "active_agent": "triage",
-                    },
-                )
         return Command(goto="exchange_tool_node", update={"messages": [response]})
 
     content = response.content if isinstance(response.content, str) else ""

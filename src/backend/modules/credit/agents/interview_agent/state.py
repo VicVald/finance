@@ -24,3 +24,7 @@ class InterviewState(BaseModel):
     # Resultado
     novo_score: Optional[int] = None
     entrevista_concluida: bool = False
+    
+    # Campo bridge para handoff reverso (retorno à triagem)
+    active_agent: Optional[str] = None
+

@@ -26,3 +26,6 @@ class CreditState(BaseModel):
 
     # Indica se a entrevista de crédito foi concluída
     entrevista_concluida: bool = False
+
+    # Campo bridge para handoff reverso (retorno à triagem)
+    active_agent: Optional[str] = None

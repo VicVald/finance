@@ -98,17 +98,14 @@ async def _stream_agent(
                     if node_name == "triage_node":
                         triage_buffer += content
                     else:
-                        # Se havíamos acumulado texto do triage sem handoff, emite agora
-                        if triage_buffer:
-                            if "HANDOFF" not in triage_buffer:
-                                yield _sse_event("token", {"content": triage_buffer})
-                            triage_buffer = ""
+                        # Quando entramos em outro nó, descarta qualquer texto residual acumulado pelo triage_node
+                        triage_buffer = ""
 
                         clean_content = content.replace("[RETURN_TRIAGE]", "")
                         if clean_content:
                             yield _sse_event("token", {"content": clean_content})
 
-        # Ao final do stream, libera o buffer do triage se não continha handoff
+        # Ao final do stream, só libera o buffer do triage se active_agent continuar sendo triage e sem handoff
         if triage_buffer and "HANDOFF" not in triage_buffer:
             yield _sse_event("token", {"content": triage_buffer})
 

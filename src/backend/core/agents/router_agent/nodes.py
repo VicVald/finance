@@ -53,6 +53,7 @@ DIRECIONAMENTO (após autenticação):
 - Câmbio/cotação → chame a ferramenta `transfer_to_exchange`
 - Apenas se o cliente pedir EXPLICITAMENTE a "entrevista de crédito" ou "entrevista de score" → chame a ferramenta `transfer_to_interview`
 - Encerramento solicitado → chame `end_conversation`
+- **Ao chamar ferramentas de transferência (`transfer_to_credit`, `transfer_to_interview`, `transfer_to_exchange`), retorne APENAS a chamada da ferramenta sem texto descritivo adicional de transferência.**
 
 REGRAS:
 - Não repita saudações desnecessariamente.
@@ -62,59 +63,31 @@ REGRAS:
 - Nunca ofereça privilégios especiais, descontos ou bypass de processos de segurança. O cliente deve seguir os fluxos normais."""
 
 
+AUTHENTICATED_SYSTEM_PROMPT = """Você é o assistente virtual do Banco Ágil.
+
+O CLIENTE JÁ ESTÁ AUTENTICADO NO SISTEMA.
+Nome do Cliente: {cliente_nome}
+Agente Ativo Atual: {active_agent}
+
+REGRAS OBRIGATÓRIAS:
+1. NUNCA solicite CPF, data de nascimento ou qualquer dado de autenticação. O cliente JÁ está autenticado.
+2. Sua função é classificar a intenção do cliente a cada mensagem e direcioná-lo IMEDIATAMENTE chamando a ferramenta de transferência correspondente:
+   - Se o cliente mencionar crédito, limite, aumento de limite OU se for continuidade/saudação do atendimento atual de crédito (`active_agent` == 'credit') → chame `transfer_to_credit`.
+   - Se o cliente mencionar câmbio, cotação, moedas (dólar, euro, etc.) OU se for continuidade/saudação do atendimento atual de câmbio (`active_agent` == 'exchange') → chame `transfer_to_exchange`.
+   - Se o cliente pedir explicitamente a "entrevista de crédito" ou "entrevista de score" OU se a entrevista já estiver em andamento (`active_agent` == 'interview') → chame `transfer_to_interview`.
+   - Se o cliente solicitar o encerramento do atendimento → chame `end_conversation`.
+3. Ao chamar ferramentas de transferência (`transfer_to_credit`, `transfer_to_exchange`, `transfer_to_interview`), retorne APENAS a chamada da ferramenta sem texto adicional."""
+
+
 # ─── Nós ──────────────────────────────────────────────────────────────────────
 
 def triage_node(state: RouterState) -> Command:
     """
-    Nó principal do router. Gerencia autenticação e handoff.
+    Nó principal do router. Gerencia autenticação e handoff dinâmico por intenção.
     Retorna Command para direcionar o fluxo do grafo.
     """
-    log.debug(f"[RouterAgent] Entrando no triage_node. Tentativas de auth: {state.auth_attempts}")
+    log.debug(f"[RouterAgent] Entrando no triage_node. Authenticated: {state.is_authenticated}, Active agent: {state.active_agent}")
 
-    # ── Máquina de estados da entrevista ────────────────────────────────────
-    # Quando active_agent=="interview", o triage NÃO invoca o LLM.
-    # Ele gerencia o fluxo da entrevista diretamente como máquina de estados.
-    if state.active_agent == "interview":
-        from langchain_core.messages import HumanMessage as _HM
-        last_msg = state.messages[-1] if state.messages else None
-        last_content = ""
-        if last_msg and hasattr(last_msg, "content") and isinstance(last_msg.content, str):
-            last_content = last_msg.content
-
-        # Entrevista concluída → volta para crédito para tentar novamente
-        if state.entrevista_concluida:
-            log.debug("[RouterAgent] Entrevista concluída. Retornando ao crédito.")
-            new_score = state.novo_score if state.novo_score is not None else state.cliente_score_atual
-            return Command(
-                goto="credit_subgraph",
-                update={
-                    "active_agent": "credit",
-                    "cliente_score_atual": new_score,
-                    "entrevista_concluida": True,
-                },
-            )
-
-        # [RETURN_TRIAGE] vindo do interview_node → sai do modo entrevista
-        if "[RETURN_TRIAGE]" in last_content:
-            log.debug("[RouterAgent] [RETURN_TRIAGE] na entrevista. Saindo do modo entrevista.")
-            clean = last_content.replace("[RETURN_TRIAGE]", "").strip()
-            cleaned_msg = type(last_msg)(content=clean, id=getattr(last_msg, "id", None))
-            return Command(
-                goto="__end__",
-                update={
-                    "active_agent": "triage",
-                    "messages": [cleaned_msg],
-                },
-            )
-
-        # Usuário enviou nova mensagem → continua a entrevista
-        if isinstance(last_msg, _HM):
-            log.debug("[RouterAgent] Nova mensagem do usuário. Continuando entrevista.")
-            return Command(goto="interview_subgraph", update={})
-
-        # Entrevista acabou de responder → pausa o grafo e aguarda o usuário
-        log.debug("[RouterAgent] Entrevista respondeu. Pausando grafo raiz.")
-        return Command(goto="__end__", update={})
     # ── Intercepção de aceite de entrevista vindo do credit_node ─────────────
     if state.aceite_entrevista:
         log.debug("[RouterAgent] Aceite de entrevista detectado. Iniciando entrevista.")
@@ -126,9 +99,7 @@ def triage_node(state: RouterState) -> Command:
             },
         )
 
-    # ── Intercepção de resposta do assistente (evita loops infinitos de handoff) ────
-    # Se a última mensagem for da IA e não contiver chamadas de ferramentas,
-    # significa que o sistema já respondeu e deve aguardar a próxima entrada do usuário.
+    # ── Intercepção de resposta do assistente (evita loops infinitos) ────
     if state.messages:
         from langchain_core.messages import AIMessage as _AIM
         last_msg = state.messages[-1]
@@ -152,13 +123,27 @@ def triage_node(state: RouterState) -> Command:
             },
         )
 
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages)
+    if state.is_authenticated:
+        sys_prompt = AUTHENTICATED_SYSTEM_PROMPT.format(
+            cliente_nome=state.cliente_nome or "Cliente",
+            active_agent=state.active_agent or "triage",
+        )
+    else:
+        sys_prompt = SYSTEM_PROMPT
+
+    messages = [SystemMessage(content=sys_prompt)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
         log.warning("triage_node: LLM retornou resposta vazia. Retentando...")
         retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
         response = llm_with_tools.invoke(retry_msgs)
+
+    # Se cliente está autenticado e o LLM não chamou tool, mantém no subgrafo ativo (se houver)
+    if not response.tool_calls and state.is_authenticated and state.active_agent in ("credit", "exchange", "interview"):
+        target_subgraph = f"{state.active_agent}_subgraph"
+        log.debug(f"[RouterAgent] Cliente autenticado sem tool_call explícita. Mantendo em {target_subgraph}.")
+        return Command(goto=target_subgraph, update={})
 
     # ── Processa tool calls ──────────────────────────────────────────────────
     if response.tool_calls:
@@ -198,39 +183,42 @@ def triage_node(state: RouterState) -> Command:
 
             elif tname == "transfer_to_credit":
                 tool_msg = ToolMessage(
-                    content="Transferido para o Agente de Crédito.",
+                    content="Handoff realizado com sucesso. (INSTRUÇÃO INTERNA: assuma o atendimento imediatamente ajudando o usuário. NÃO mencione que ele foi transferido. NÃO confirme a transferência.)",
                     tool_call_id=tcall_id,
                 )
+                clean_response = type(response)(content="", tool_calls=response.tool_calls, id=getattr(response, "id", None))
                 return Command(
                     goto="credit_subgraph",
                     update={
-                        "messages": [response, tool_msg],
+                        "messages": [clean_response, tool_msg],
                         "active_agent": "credit",
                     },
                 )
 
             elif tname == "transfer_to_exchange":
                 tool_msg = ToolMessage(
-                    content="Transferido para o Agente de Câmbio.",
+                    content="Handoff realizado com sucesso. (INSTRUÇÃO INTERNA: assuma o atendimento imediatamente ajudando o usuário. NÃO mencione que ele foi transferido. NÃO confirme a transferência.)",
                     tool_call_id=tcall_id,
                 )
+                clean_response = type(response)(content="", tool_calls=response.tool_calls, id=getattr(response, "id", None))
                 return Command(
                     goto="exchange_subgraph",
                     update={
-                        "messages": [response, tool_msg],
+                        "messages": [clean_response, tool_msg],
                         "active_agent": "exchange",
                     },
                 )
 
             elif tname == "transfer_to_interview":
                 tool_msg = ToolMessage(
-                    content="Transferido para a Entrevista de Crédito.",
+                    content="Handoff realizado com sucesso. (INSTRUÇÃO INTERNA: assuma o atendimento imediatamente ajudando o usuário. NÃO mencione que ele foi transferido. NÃO confirme a transferência.)",
                     tool_call_id=tcall_id,
                 )
+                clean_response = type(response)(content="", tool_calls=response.tool_calls, id=getattr(response, "id", None))
                 return Command(
                     goto="interview_subgraph",
                     update={
-                        "messages": [response, tool_msg],
+                        "messages": [clean_response, tool_msg],
                         "active_agent": "interview",
                     },
                 )

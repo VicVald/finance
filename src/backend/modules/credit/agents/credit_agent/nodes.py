@@ -15,12 +15,11 @@ from modules.credit.agents.credit_agent.state import CreditState
 from modules.credit.agents.credit_agent.tools import (
     consultar_limite,
     solicitar_aumento_limite,
-    transfer_to_triage,
 )
 
 log = logging.getLogger(__name__)
 
-CREDIT_TOOLS = [consultar_limite, solicitar_aumento_limite, transfer_to_triage]
+CREDIT_TOOLS = [consultar_limite, solicitar_aumento_limite]
 
 CREDIT_SYSTEM_PROMPT = """Você é o especialista de crédito do Banco Ágil. Seja direto e preciso.
 
@@ -34,16 +33,13 @@ COMPORTAMENTO OBRIGATÓRIO:
 - Use sempre o `cpf_hash` do cliente autenticado nas chamadas de ferramenta.
 - Se o retorno da ferramenta for aprovado: confirme com clareza ao cliente que o limite foi aumentado com sucesso para o novo valor.
 - Se o retorno da ferramenta for rejeitado: informe o motivo brevemente e ofereça a entrevista de score para recalcular os dados.
-- **Se o histórico contiver a tag `[INTERVIEW_DONE]` (entrevista concluída)**: informe o novo score recalculado do cliente e pergunte proativamente se ele gostaria de solicitar um aumento de limite de crédito agora.
-- Se o cliente quiser encerrar ou falar de outro assunto: chame a ferramenta `transfer_to_triage`.
 - Seja breve: máximo 3 frases por resposta.
 - Nunca invente dados de limite ou score.
 - Nunca ofereça privilégios especiais, aprovações sem análise ou bypass do processo de crédito.
 
 FERRAMENTAS DISPONÍVEIS:
 - consultar_limite(cpf_hash): retorna o limite atual
-- solicitar_aumento_limite(cpf_hash, novo_limite): processa o pedido
-- transfer_to_triage(): transfere o atendimento de volta para a triagem geral (router)"""
+- solicitar_aumento_limite(cpf_hash, novo_limite): processa o pedido"""
 
 
 def _build_llm():
@@ -62,11 +58,6 @@ def credit_node(state: CreditState) -> Command:
     if state.cliente_nome:
         system_content += f"\nNome: {state.cliente_nome}"
 
-    # Se o estado indicar entrevista concluída
-    has_interview_done = state.entrevista_concluida
-    if has_interview_done:
-        system_content += f"\n\nATENÇÃO: A entrevista de crédito foi concluída com sucesso. O novo score recalculado do cliente é {state.score_atual}. Você DEVE informar este novo score ao cliente e perguntar proativamente se ele gostaria de solicitar um aumento de limite de crédito agora."
-
     messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
 
@@ -77,20 +68,6 @@ def credit_node(state: CreditState) -> Command:
 
     # ── Tool calls ────────────────────────────────────────────────────────────
     if response.tool_calls:
-        for tc in response.tool_calls:
-            if tc.get("name") == "transfer_to_triage":
-                from langchain_core.messages import ToolMessage
-                tool_msg = ToolMessage(
-                    content="Transferido de volta para a triagem geral.",
-                    tool_call_id=tc.get("id"),
-                )
-                return Command(
-                    goto="__end__",
-                    update={
-                        "messages": [response, tool_msg],
-                        "active_agent": "triage",
-                    },
-                )
         return Command(goto="credit_tool_node", update={"messages": [response]})
 
     # ── Retorno para triagem ──────────────────────────────────────────────────

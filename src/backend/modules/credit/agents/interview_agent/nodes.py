@@ -16,7 +16,6 @@ from langgraph.types import Command
 
 from utils.llm import build_llm
 from modules.credit.agents.interview_agent.state import InterviewState
-from modules.credit.agents.interview_agent.tools import transfer_to_triage
 from modules.credit.services import calcular_score_entrevista, atualizar_score_cliente
 
 log = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ def calcular_e_salvar_score(
     }
 
 
-INTERVIEW_TOOLS = [calcular_e_salvar_score, transfer_to_triage]
+INTERVIEW_TOOLS = [calcular_e_salvar_score]
 
 INTERVIEW_SYSTEM_PROMPT = """Você é o agente de entrevista de crédito do Banco Ágil.
 
@@ -81,9 +80,8 @@ COMPORTAMENTO:
 - O cliente pode responder um campo por vez ou vários de uma vez.
 - À medida que receber respostas, confirme os dados coletados e peça os que faltam.
 - Quando todos os 5 campos estiverem coletados, chame a tool `calcular_e_salvar_score`.
-- Após o cálculo, informe o novo score e diga que o cliente será redirecionado para crédito.
+- Após o cálculo, informe com clareza ao cliente que a entrevista de crédito foi concluída e apresente o seu novo score recalculado.
 - **O cliente pode corrigir/alterar valores já informados anteriormente.** Atualize seu entendimento e continue perguntando os campos faltantes.
-- Se o cliente quiser encerrar ou falar de outro assunto (ex: câmbio): chame a ferramenta `transfer_to_triage`.
 - Seja direto: máximo 3 frases por resposta.
 
 NUNCA:
@@ -97,20 +95,22 @@ def _build_llm():
 
 
 def interview_node(state: InterviewState) -> Command:
-    """Nó principal do agente de entrevista."""
+    """
+    Nó principal da entrevista de crédito.
+    Coleta os 5 campos financeiros e calcula o score.
+    """
     llm = _build_llm()
     llm_with_tools = llm.bind_tools(INTERVIEW_TOOLS)
 
+    # Injeta resumo dos dados já coletados no prompt para dar contexto ao LLM
+    collected_summary = _get_collected_summary(state)
     system_content = INTERVIEW_SYSTEM_PROMPT
     if state.cpf_hash:
-        system_content += f"\n\nCliente — cpf_hash: {state.cpf_hash}"
+        system_content += f"\n\nCliente autenticado — cpf_hash: {state.cpf_hash}"
     if state.cliente_nome:
         system_content += f"\nNome: {state.cliente_nome}"
-
-    # Injeta contexto dos dados já coletados
-    collected = _get_collected_summary(state)
-    if collected:
-        system_content += f"\n\nDados já coletados: {collected}"
+    if collected_summary:
+        system_content += f"\n\nDados financeiros já coletados nesta sessão: {collected_summary}"
 
     messages = [SystemMessage(content=system_content)] + list(state.messages)
     response = llm_with_tools.invoke(messages)
@@ -120,36 +120,21 @@ def interview_node(state: InterviewState) -> Command:
         retry_msgs = messages + [SystemMessage(content="Você deve responder ao usuário agora. Não silencie.")]
         response = llm_with_tools.invoke(retry_msgs)
 
-    # Tool call → calcular score ou retornar para triagem
+    # Tool call → calcular score
     if response.tool_calls:
-        for tc in response.tool_calls:
-            if tc.get("name") == "transfer_to_triage":
-                from langchain_core.messages import ToolMessage
-                tool_msg = ToolMessage(
-                    content="Transferido de volta para a triagem geral.",
-                    tool_call_id=tc.get("id"),
-                )
-                return Command(
-                    goto="__end__",
-                    update={
-                        "messages": [response, tool_msg],
-                        "active_agent": "triage",
-                    },
-                )
         return Command(goto="interview_tool_node", update={"messages": [response]})
 
     # Verifica se entrevista foi concluída (score calculado no histórico)
     novo_score = _extract_novo_score(state)
     if novo_score is not None:
-        # Sinaliza ao triage (via tag na mensagem) que a entrevista terminou
-        done_content = response.content if isinstance(response.content, str) else ""
-        done_msg = AIMessage(content=done_content)
         return Command(
             goto="__end__",
             update={
-                "messages": [done_msg],
+                "messages": [response],
                 "novo_score": novo_score,
+                "cliente_score_atual": novo_score,
                 "entrevista_concluida": True,
+                "active_agent": "triage",
             },
         )
 
@@ -178,12 +163,18 @@ def _extract_novo_score(state: InterviewState) -> int | None:
     for msg in reversed(list(state.messages)):
         if isinstance(msg, ToolMessage):
             try:
-                import ast
-                data = ast.literal_eval(msg.content)
+                import json
+                data = json.loads(msg.content)
                 if "novo_score" in data:
                     return int(data["novo_score"])
             except Exception:
-                pass
+                try:
+                    import ast
+                    data = ast.literal_eval(msg.content)
+                    if "novo_score" in data:
+                        return int(data["novo_score"])
+                except Exception:
+                    pass
             break
     return None
 

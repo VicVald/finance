@@ -11,3 +11,6 @@ class ExchangeState(BaseModel):
     ultima_moeda_consultada: Optional[str] = None
     ultima_cotacao: Optional[dict] = None
     api_fonte: Optional[Literal["brasilapi", "awesomeapi"]] = None
+
+    # Campo bridge para handoff reverso (retorno à triagem)
+    active_agent: Optional[str] = None
