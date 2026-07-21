@@ -11,11 +11,10 @@ import json
 import logging
 from langchain_core.messages import SystemMessage, AIMessage
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Command
 
-from core.config import settings
+from utils.llm import build_llm
 from modules.credit.agents.interview_state import InterviewState
 from modules.credit.services import calcular_score_entrevista, atualizar_score_cliente
 
@@ -93,14 +92,7 @@ NUNCA:
 
 
 def _build_llm():
-    return ChatOpenAI(
-        model=settings.OPENROUTER_MODEL,
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base=settings.OPENROUTER_BASE_URL,
-        temperature=0.1,
-        streaming=True,
-        max_retries=3,
-    )
+    return build_llm(temperature=0.1)
 
 
 def interview_node(state: InterviewState) -> Command:
@@ -119,7 +111,7 @@ def interview_node(state: InterviewState) -> Command:
     if collected:
         system_content += f"\n\nDados já coletados: {collected}"
 
-    messages = [SystemMessage(content=system_content)] + list(state.messages)
+    messages = [SystemMessage(content=system_content)] + list(state.messages[-6:])
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):

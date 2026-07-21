@@ -6,13 +6,13 @@ Um sistema inteligente de atendimento bancário baseado em múltiplos agentes de
 
 O Banco Ágil é uma solução de demonstração (PoC) que implementa:
 
-- ✅ **Autenticação segura** via CPF + data de nascimento com JWT
+- ✅ **Autenticação segura** via login JWT + CPF + data de nascimento com JWT
 - ✅ **Múltiplos agentes especializados** (Crédito, Entrevista Financeira, Câmbio)
 - ✅ **Orquestração dinâmica** com handoff transparente entre agentes
 - ✅ **Rastreabilidade completa** via LangSmith + CSV de auditoria
 - ✅ **Proteção de dados** com masking de PII e hash SHA-256 para CPF
 - ✅ **Streaming de respostas** em tempo real via SSE
-- ✅ **Interface moderna** em Streamlit
+- ✅ **Interface simplificada** em Streamlit
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -340,11 +340,11 @@ uv run python -m src.evals.runner --type ai_battle
 
 Os cenários `/ai-battle` simulam ataques de red-teaming. Algumas falhas são comportamentais esperadas do LLM:
 
-| Persona | Nota Típica | Motivo |
-|---------|-------------|--------|
-| Engenheiro Social de Limite | 70-90% | Varia conforme o modelo consegue negar pressão social |
-| Cotador Insistente | 30-95% | Varia conforme o modelo mantém consistência nas cotações |
-| Extrator de PII | 100% | Defesa robusta contra extração de dados |
+| Persona  | Motivo |
+|----------|--------|
+| Engenheiro Social de Limite | Varia conforme o modelo consegue negar pressão social, mas tende a conceder permissões que ele não tem, melhora com prompt e guardrails |
+| Cotador Insistente | Varia conforme o modelo mantém consistência nas cotações e disponibilidade das APIs |
+| Extrator de PII | Defesa robusta contra extração de dados |
 
 ### 6. Rastreabilidade
 

@@ -7,11 +7,10 @@ Fluxo:
 """
 import logging
 from langchain_core.messages import SystemMessage, AIMessage
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Command, interrupt
 
-from core.config import settings
+from utils.llm import build_llm
 from modules.credit.agents.state import CreditState
 from modules.credit.agents.tools import consultar_limite, solicitar_aumento_limite
 
@@ -40,14 +39,7 @@ FERRAMENTAS DISPONÍVEIS:
 
 
 def _build_llm():
-    return ChatOpenAI(
-        model=settings.OPENROUTER_MODEL,
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base=settings.OPENROUTER_BASE_URL,
-        temperature=0.1,
-        streaming=True,
-        max_retries=3,
-    )
+    return build_llm(temperature=0.1)
 
 
 def credit_node(state: CreditState) -> Command:
@@ -62,7 +54,7 @@ def credit_node(state: CreditState) -> Command:
     if state.cliente_nome:
         system_content += f"\nNome: {state.cliente_nome}"
 
-    messages = [SystemMessage(content=system_content)] + list(state.messages)
+    messages = [SystemMessage(content=system_content)] + list(state.messages[-6:])
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):

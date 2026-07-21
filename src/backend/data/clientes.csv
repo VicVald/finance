@@ -3,4 +3,3 @@ cpf_hash,cpf_mask,nome,data_nascimento,limite_atual,score,email,senha
 b78d257a0d66541c62ed32ab52d5ce1992746343086f8f6dce639c4f02073de0,222.XXX.XXX-22,Maria Oliveira,20/10/1985,1500.0,450,maria@agil.com,senha456
 fc4ce02b71d3a41c50373f1b57f719d4d568c50270f1e3584734ab18dd0d2f53,333.XXX.XXX-33,Pedro Santos,03/03/1995,500.0,300,pedro@agil.com,senha789
 6706ff84664ba7e6c4b98ea80c68db006a6cbc5c2a42f79270bc5ffb8bdd5a87,444.XXX.XXX-44,Ana Costa,12/12/1988,12000.0,950,ana@agil.com,senhaabc
-7aa650ae6dc1d03761ad823937ae35f8a1d53751a194bc0a90b7b6b6a92ce0cb,383.XXX.XXX-03,Victor Monteiro,06/03/2006,0.0,299,victorhugokawano@gmail.com,senha123

@@ -7,11 +7,10 @@ Estrutura do grafo raiz:
 """
 import logging
 from langchain_core.messages import SystemMessage, ToolMessage
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Command
 
-from core.config import settings
+from utils.llm import build_llm
 from core.agents.router_agent.state import RouterState
 from core.agents.router_agent.tools import authenticate_client, end_conversation
 
@@ -20,14 +19,7 @@ log = logging.getLogger(__name__)
 # ─── LLM ──────────────────────────────────────────────────────────────────────
 
 def _build_llm():
-    return ChatOpenAI(
-        model=settings.OPENROUTER_MODEL,
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base=settings.OPENROUTER_BASE_URL,
-        temperature=0.2,
-        streaming=True,
-        max_retries=3,
-    )
+    return build_llm(temperature=0.2)
 
 
 TRIAGE_TOOLS = [authenticate_client, end_conversation]
@@ -146,7 +138,7 @@ def triage_node(state: RouterState) -> Command:
             },
         )
 
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages)
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state.messages[-6:])
     response = llm_with_tools.invoke(messages)
 
     if not response.tool_calls and not (isinstance(response.content, str) and response.content.strip()):
