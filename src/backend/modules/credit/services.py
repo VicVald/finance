@@ -154,3 +154,37 @@ def atualizar_score_cliente(cpf_hash: str, novo_score: int) -> bool:
     except Exception as e:
         log.error(f"Erro ao atualizar score: {e}")
         return False
+
+
+def atualizar_limite_cliente(cpf_hash: str, novo_limite: float) -> bool:
+    """
+    Atualiza o limite_atual do cliente no clientes.csv.
+    Faz leitura completa, modifica e reescreve o arquivo.
+
+    Returns:
+        True se atualizado com sucesso, False caso contrário.
+    """
+    csv_path = settings.CLIENTES_CSV
+    try:
+        rows = []
+        updated = False
+        with open(csv_path, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            fieldnames = reader.fieldnames
+            for row in reader:
+                if row["cpf_hash"] == cpf_hash:
+                    row["limite_atual"] = str(novo_limite)
+                    updated = True
+                rows.append(row)
+
+        if updated:
+            with open(csv_path, mode="w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+
+        return updated
+    except Exception as e:
+        log.error(f"Erro ao atualizar limite: {e}")
+        return False
+

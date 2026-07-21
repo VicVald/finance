@@ -65,3 +65,29 @@ class TestScoreLimitRule:
         with patch("builtins.open", mock_open(read_data=MOCK_SCORE_LIMITE_CSV)):
             assert fn(score=1000, novo_limite=25000.0) is True
             assert fn(score=1000, novo_limite=25000.01) is False
+
+
+class TestCreditStateBridge:
+    """Testa se o estado do Router é mapeado corretamente para o CreditState."""
+
+    def test_setup_credit_node_maps_fields(self):
+        from modules.credit.agents.graph import _setup_credit_node
+        from modules.credit.agents.state import CreditState
+
+        # Simulando o estado inicial recebido pelo setup_node
+        class MockState:
+            def __init__(self):
+                self.cliente_cpf_hash = None
+                self.limite_atual = None
+                self.score_atual = None
+                self.authenticated_cpf_hash = "HASH_CPF"
+                self.cliente_limite_atual = 1000.0
+                self.cliente_score_atual = 300
+
+        state = MockState()
+        update = _setup_credit_node(state)
+
+        assert update["cliente_cpf_hash"] == "HASH_CPF"
+        assert update["limite_atual"] == 1000.0
+        assert update["score_atual"] == 300
+

@@ -25,9 +25,12 @@ ESCOPO:
 - Processar solicitações de aumento de limite.
 - Informar sobre resultado (aprovado/rejeitado) e próximos passos.
 
-COMPORTAMENTO:
-- Use sempre o cpf_hash do cliente autenticado nas tools.
-- Se o pedido for rejeitado: informe o motivo brevemente e ofereça a entrevista de score.
+COMPORTAMENTO OBRIGATÓRIO:
+- **Sempre que o cliente solicitar aumento de limite ou informar um novo valor desejado, você DEVE chamar a ferramenta `solicitar_aumento_limite` imediatamente.** Nunca diga que enviará para análise manual, nem ofereça entrevista antes de chamar a ferramenta.
+- Use sempre o `cpf_hash` do cliente autenticado nas chamadas de ferramenta.
+- Se o retorno da ferramenta for aprovado: confirme com clareza ao cliente que o limite foi aumentado com sucesso para o novo valor.
+- Se o retorno da ferramenta for rejeitado: informe o motivo brevemente e ofereça a entrevista de score para recalcular os dados.
+- **Se o histórico contiver a tag `[INTERVIEW_DONE]` (entrevista concluída)**: informe o novo score recalculado do cliente e pergunte proativamente se ele gostaria de solicitar um aumento de limite de crédito agora.
 - Se o cliente quiser encerrar ou falar de outro assunto: responda com [RETURN_TRIAGE].
 - Seja breve: máximo 3 frases por resposta.
 - Nunca invente dados de limite ou score.
@@ -113,14 +116,18 @@ def credit_node(state: CreditState) -> Command:
 
 
 def _check_last_rejection(state: CreditState) -> bool:
-    """Verifica se a última tool retornou status='rejeitado'."""
+    """Verifica se a última tool retornou status='rejeitado' por insuficiência de score."""
     from langchain_core.messages import ToolMessage
     for msg in reversed(list(state.messages)):
         if isinstance(msg, ToolMessage):
             try:
                 import ast
                 data = ast.literal_eval(msg.content)
-                return data.get("status") == "rejeitado"
+                if data.get("status") == "rejeitado":
+                    motivo = str(data.get("motivo", "")).lower()
+                    if "maior que" in motivo or "invalido" in data.get("status", ""):
+                        return False
+                    return True
             except Exception:
                 pass
             break

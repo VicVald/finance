@@ -8,6 +8,7 @@ from langchain_core.tools import tool
 from modules.credit.services import (
     check_score_allows_limit,
     registrar_solicitacao_aumento,
+    atualizar_limite_cliente,
 )
 from core.config import settings
 import csv
@@ -74,8 +75,8 @@ def solicitar_aumento_limite(cpf_hash: str, novo_limite: float) -> dict:
 
     if novo_limite <= limite_atual:
         return {
-            "status": "rejeitado",
-            "motivo": "O novo limite deve ser maior que o limite atual.",
+            "status": "invalido",
+            "motivo": f"O novo limite solicitado (R$ {novo_limite:,.2f}) deve ser maior que seu limite atual (R$ {limite_atual:,.2f}).",
             "limite_atual": limite_atual,
             "novo_limite_solicitado": novo_limite,
             "score": score,
@@ -83,6 +84,9 @@ def solicitar_aumento_limite(cpf_hash: str, novo_limite: float) -> dict:
 
     aprovado = check_score_allows_limit(score=score, novo_limite=novo_limite)
     status = "aprovado" if aprovado else "rejeitado"
+
+    if aprovado:
+        atualizar_limite_cliente(cpf_hash=cpf_hash, novo_limite=novo_limite)
 
     registrar_solicitacao_aumento(
         cpf_hash=cpf_hash,

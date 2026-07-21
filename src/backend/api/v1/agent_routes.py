@@ -77,6 +77,8 @@ async def _stream_agent(
         "current_user_cpf_hash": current_user["cpf_hash"],
     }
 
+    triage_buffer = ""
+
     try:
         async for event in compiled_router_graph.astream_events(
             initial_update,
@@ -85,12 +87,37 @@ async def _stream_agent(
         ):
             kind = event.get("event", "")
             data = event.get("data", {})
+            node_name = event.get("metadata", {}).get("langgraph_node", "")
 
             # ── Token de texto do LLM ────────────────────────────────────────
             if kind == "on_chat_model_stream":
                 chunk = data.get("chunk")
                 if isinstance(chunk, AIMessageChunk) and chunk.content:
-                    yield _sse_event("token", {"content": chunk.content})
+                    content = chunk.content
+
+                    if node_name == "triage_node":
+                        triage_buffer += content
+                    else:
+                        # Se havíamos acumulado texto do triage sem handoff, emite agora
+                        if triage_buffer:
+                            if "HANDOFF" not in triage_buffer:
+                                yield _sse_event("token", {"content": triage_buffer})
+                            triage_buffer = ""
+
+                        # Limpa tags internas antes de emitir tokens dos subagentes
+                        clean_content = (
+                            content.replace("[HANDOFF:credit]", "")
+                            .replace("[HANDOFF:exchange]", "")
+                            .replace("[HANDOFF:interview]", "")
+                            .replace("[RETURN_TRIAGE]", "")
+                            .replace("[INTERVIEW_DONE]", "")
+                        )
+                        if clean_content:
+                            yield _sse_event("token", {"content": clean_content})
+
+        # Ao final do stream, libera o buffer do triage se não continha handoff
+        if triage_buffer and "HANDOFF" not in triage_buffer:
+            yield _sse_event("token", {"content": triage_buffer})
 
         # ── Após o loop: inspeciona estado para detectar interrupt pendente ──
         # Subgraphs pausam o astream_events sem exception — o interrupt fica
@@ -161,7 +188,15 @@ async def _stream_resume(
             if kind == "on_chat_model_stream":
                 chunk = data.get("chunk")
                 if isinstance(chunk, AIMessageChunk) and chunk.content:
-                    yield _sse_event("token", {"content": chunk.content})
+                    clean_content = (
+                        chunk.content.replace("[HANDOFF:credit]", "")
+                        .replace("[HANDOFF:exchange]", "")
+                        .replace("[HANDOFF:interview]", "")
+                        .replace("[RETURN_TRIAGE]", "")
+                        .replace("[INTERVIEW_DONE]", "")
+                    )
+                    if clean_content:
+                        yield _sse_event("token", {"content": clean_content})
 
         # Verifica interrupt pendente após resume (ex: segundo interrupt no fluxo)
         try:

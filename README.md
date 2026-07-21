@@ -71,11 +71,13 @@ O Banco Ágil é uma solução de demonstração (PoC) que implementa:
 3. AGENTE DE CRÉDITO
    Agente → Consulta clientes.csv
    Agente → "Seu limite atual é R$ 5.000"
-   Cliente → "Gostaria de aumentar meu limite"
+   Cliente → "Gostaria de aumentar meu limite para 5500"
+   Agente → Analisa regras de crédito (ex: score >= 800 e aumento <= 50%)
+   Agente → Se aprovado: Atualiza limite no clientes.csv e aprova direto sem entrevista
 
 4. REJEITADO? → HANDOFF PARA ENTREVISTA
-   Agente de Crédito → Solicitação rejeitada (score baixo)
-   Router → Detecta: cliente quer entrevista
+   Agente de Crédito → Solicitação rejeitada (score insuficiente)
+   Router → Detecta: cliente deseja recalcular score/entrevista
    Router → Handoff para: Agente de Entrevista
 
 5. ENTREVISTA FINANCEIRA
@@ -228,6 +230,8 @@ O projeto segue a metodologia **Architecture Decision Records (ADR)** em `/docs/
 | ADR-007 | Agente de Câmbio | BrasilAPI + AwesomeAPI com fallback |
 | ADR-008 | Autenticação JWT | Token-based com refresh token |
 | ADR-009 | Ajustes de Triage | Melhorias na detecção de intenção |
+| ADR-010 | Melhorias no Fluxo de Crédito | Aprovação direta baseada em regras, evitando entrevistas desnecessárias, com persistência no CSV |
+| ADR-011 | SSE Streaming Limpo | Filtragem de tags de controle (ex: `[HANDOFF:...]`) diretamente na camada de API para UI limpa |
 
 Leia os detalhes completos em `/docs/adr/`.
 

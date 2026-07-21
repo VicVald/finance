@@ -25,6 +25,11 @@ class RouterState(BaseModel):
     cliente_limite_atual: Optional[float] = None
     cliente_score_atual: Optional[int] = None
 
+    # Resultados da entrevista de crédito
+    novo_score: Optional[int] = None
+    entrevista_concluida: bool = False
+
     # Controle de sessão
     is_conversation_ended: bool = False
     thread_id: str = ""
+

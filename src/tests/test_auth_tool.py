@@ -190,3 +190,43 @@ class TestCrossValidation:
         assert res.update["auth_attempts"] == 1
         assert "is_authenticated" not in res.update or not res.update["is_authenticated"]
 
+
+class TestMultipleToolCalls:
+    """Testa o comportamento do nó de triagem diante de múltiplas tool calls."""
+
+    @patch("core.agents.router_agent.nodes._build_llm")
+    @patch("core.agents.router_agent.tools._authenticate_client_logic")
+    def test_multiple_tool_calls_handled(self, mock_auth_logic, mock_build_llm):
+        """Múltiplas chamadas de ferramentas na mesma resposta da IA devem ser todas processadas."""
+        from core.agents.router_agent.nodes import triage_node
+        from core.agents.router_agent.state import RouterState
+        from langchain_core.messages import AIMessage
+        
+        mock_llm = mock_build_llm.return_value
+        mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
+            content="", 
+            tool_calls=[
+                {"name": "authenticate_client", "args": {"cpf": "123", "data_nascimento": "01/01/2000"}, "id": "call_1"},
+                {"name": "end_conversation", "args": {}, "id": "call_2"}
+            ]
+        )
+
+        mock_auth_logic.return_value = {
+            "authenticated": True, 
+            "cpf_hash": "HASH_MEU", 
+            "nome": "Victor",
+            "limite_atual": 1000,
+            "score": 800
+        }
+
+        state = RouterState(current_user_cpf_hash="HASH_MEU")
+        res = triage_node(state)
+
+        # Se houver 'end_conversation' no loop, deve encerrar o atendimento
+        assert res.update["is_conversation_ended"] is True
+        assert res.update["active_agent"] == "end"
+        assert len(res.update["messages"]) == 3  # AIMessage + 2 ToolMessages
+        assert res.update["messages"][1].tool_call_id == "call_1"
+        assert res.update["messages"][2].tool_call_id == "call_2"
+
+
