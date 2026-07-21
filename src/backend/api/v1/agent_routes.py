@@ -104,14 +104,7 @@ async def _stream_agent(
                                 yield _sse_event("token", {"content": triage_buffer})
                             triage_buffer = ""
 
-                        # Limpa tags internas antes de emitir tokens dos subagentes
-                        clean_content = (
-                            content.replace("[HANDOFF:credit]", "")
-                            .replace("[HANDOFF:exchange]", "")
-                            .replace("[HANDOFF:interview]", "")
-                            .replace("[RETURN_TRIAGE]", "")
-                            .replace("[INTERVIEW_DONE]", "")
-                        )
+                        clean_content = content.replace("[RETURN_TRIAGE]", "")
                         if clean_content:
                             yield _sse_event("token", {"content": clean_content})
 
@@ -188,13 +181,7 @@ async def _stream_resume(
             if kind == "on_chat_model_stream":
                 chunk = data.get("chunk")
                 if isinstance(chunk, AIMessageChunk) and chunk.content:
-                    clean_content = (
-                        chunk.content.replace("[HANDOFF:credit]", "")
-                        .replace("[HANDOFF:exchange]", "")
-                        .replace("[HANDOFF:interview]", "")
-                        .replace("[RETURN_TRIAGE]", "")
-                        .replace("[INTERVIEW_DONE]", "")
-                    )
+                    clean_content = chunk.content.replace("[RETURN_TRIAGE]", "")
                     if clean_content:
                         yield _sse_event("token", {"content": clean_content})
 

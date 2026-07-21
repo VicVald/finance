@@ -158,7 +158,7 @@ def render_chat_modal():
 
                                     if event_type == "token":
                                         accumulated += data.get("content", "")
-                                        display_text = accumulated.replace("[HANDOFF:credit]", "").replace("[HANDOFF:exchange]", "").replace("[HANDOFF:interview]", "").replace("[INTERVIEW_DONE]", "").replace("[RETURN_TRIAGE]", "")
+                                        display_text = accumulated.replace("[RETURN_TRIAGE]", "")
                                         placeholder.markdown(display_text + "▌")
                                     elif event_type == "interrupt":
                                         interrupt_data = data
@@ -172,7 +172,7 @@ def render_chat_modal():
                     placeholder.markdown(accumulated)
 
             if accumulated:
-                clean_accumulated = accumulated.replace("[HANDOFF:credit]", "").replace("[HANDOFF:exchange]", "").replace("[HANDOFF:interview]", "").replace("[INTERVIEW_DONE]", "").replace("[RETURN_TRIAGE]", "").strip()
+                clean_accumulated = accumulated.replace("[RETURN_TRIAGE]", "").strip()
                 if clean_accumulated:
                     st.session_state.messages.append({"role": "assistant", "content": clean_accumulated})
 

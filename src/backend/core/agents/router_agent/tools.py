@@ -112,3 +112,27 @@ def end_conversation() -> str:
         Mensagem de encerramento para exibir ao cliente.
     """
     return "encerrar"
+
+
+@tool
+def transfer_to_credit() -> str:
+    """
+    Transfere o atendimento para o especialista de crédito, responsável por consultar limites, score e processar aumentos de limite de crédito.
+    """
+    return "handoff_credit"
+
+
+@tool
+def transfer_to_exchange() -> str:
+    """
+    Transfere o atendimento para o especialista de câmbio, responsável por cotações de moedas estrangeiras.
+    """
+    return "handoff_exchange"
+
+
+@tool
+def transfer_to_interview() -> str:
+    """
+    Transfere o atendimento para a entrevista de crédito e score.
+    """
+    return "handoff_interview"

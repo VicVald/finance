@@ -28,6 +28,7 @@ class RouterState(BaseModel):
     # Resultados da entrevista de crédito
     novo_score: Optional[int] = None
     entrevista_concluida: bool = False
+    aceite_entrevista: Optional[bool] = None
 
     # Controle de sessão
     is_conversation_ended: bool = False

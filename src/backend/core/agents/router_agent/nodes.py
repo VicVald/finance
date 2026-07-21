@@ -12,7 +12,13 @@ from langgraph.types import Command
 
 from utils.llm import build_llm
 from core.agents.router_agent.state import RouterState
-from core.agents.router_agent.tools import authenticate_client, end_conversation
+from core.agents.router_agent.tools import (
+    authenticate_client,
+    end_conversation,
+    transfer_to_credit,
+    transfer_to_exchange,
+    transfer_to_interview,
+)
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +28,13 @@ def _build_llm():
     return build_llm(temperature=0.2)
 
 
-TRIAGE_TOOLS = [authenticate_client, end_conversation]
+TRIAGE_TOOLS = [
+    authenticate_client,
+    end_conversation,
+    transfer_to_credit,
+    transfer_to_exchange,
+    transfer_to_interview,
+]
 
 SYSTEM_PROMPT = """Você é o assistente virtual do Banco Ágil. Seja objetivo e respeitoso.
 
@@ -37,9 +49,9 @@ FLUXO DE AUTENTICAÇÃO:
 6. Na 3ª falha: chame `end_conversation` e encerre gentilmente.
 
 DIRECIONAMENTO (após autenticação):
-- Qualquer menção a crédito, limite de crédito, aumento de limite ou consulta de limite/score → responda com a tag interna [HANDOFF:credit]
-- Câmbio/cotação → responda com a tag interna [HANDOFF:exchange]
-- Apenas se o cliente pedir EXPLICITAMENTE a "entrevista de crédito" ou "entrevista de score" → responda com a tag interna [HANDOFF:interview]
+- Qualquer menção a crédito, limite de crédito, aumento de limite ou consulta de limite/score → chame a ferramenta `transfer_to_credit`
+- Câmbio/cotação → chame a ferramenta `transfer_to_exchange`
+- Apenas se o cliente pedir EXPLICITAMENTE a "entrevista de crédito" ou "entrevista de score" → chame a ferramenta `transfer_to_interview`
 - Encerramento solicitado → chame `end_conversation`
 
 REGRAS:
@@ -70,7 +82,7 @@ def triage_node(state: RouterState) -> Command:
             last_content = last_msg.content
 
         # Entrevista concluída → volta para crédito para tentar novamente
-        if "[INTERVIEW_DONE]" in last_content:
+        if state.entrevista_concluida:
             log.debug("[RouterAgent] Entrevista concluída. Retornando ao crédito.")
             new_score = state.novo_score if state.novo_score is not None else state.cliente_score_atual
             return Command(
@@ -78,6 +90,7 @@ def triage_node(state: RouterState) -> Command:
                 update={
                     "active_agent": "credit",
                     "cliente_score_atual": new_score,
+                    "entrevista_concluida": True,
                 },
             )
 
@@ -102,19 +115,16 @@ def triage_node(state: RouterState) -> Command:
         # Entrevista acabou de responder → pausa o grafo e aguarda o usuário
         log.debug("[RouterAgent] Entrevista respondeu. Pausando grafo raiz.")
         return Command(goto="__end__", update={})
-    # ── Intercepção de [HANDOFF:interview] vindo do credit_node ─────────────
-    # O credit_node emite esta tag quando o usuário aceita a entrevista.
-    if state.messages:
-        last_content = ""
-        last_msg = state.messages[-1]
-        if hasattr(last_msg, "content") and isinstance(last_msg.content, str):
-            last_content = last_msg.content
-        if "[HANDOFF:interview]" in last_content:
-            log.debug("[RouterAgent] [HANDOFF:interview] detectado. Iniciando entrevista.")
-            return Command(
-                goto="interview_subgraph",
-                update={"active_agent": "interview"},
-            )
+    # ── Intercepção de aceite de entrevista vindo do credit_node ─────────────
+    if state.aceite_entrevista:
+        log.debug("[RouterAgent] Aceite de entrevista detectado. Iniciando entrevista.")
+        return Command(
+            goto="interview_subgraph",
+            update={
+                "active_agent": "interview",
+                "aceite_entrevista": None,
+            },
+        )
 
     # ── Intercepção de resposta do assistente (evita loops infinitos de handoff) ────
     # Se a última mensagem for da IA e não contiver chamadas de ferramentas,
@@ -186,6 +196,45 @@ def triage_node(state: RouterState) -> Command:
                 tool_messages.append(tool_msg)
                 end_conv = True
 
+            elif tname == "transfer_to_credit":
+                tool_msg = ToolMessage(
+                    content="Transferido para o Agente de Crédito.",
+                    tool_call_id=tcall_id,
+                )
+                return Command(
+                    goto="credit_subgraph",
+                    update={
+                        "messages": [response, tool_msg],
+                        "active_agent": "credit",
+                    },
+                )
+
+            elif tname == "transfer_to_exchange":
+                tool_msg = ToolMessage(
+                    content="Transferido para o Agente de Câmbio.",
+                    tool_call_id=tcall_id,
+                )
+                return Command(
+                    goto="exchange_subgraph",
+                    update={
+                        "messages": [response, tool_msg],
+                        "active_agent": "exchange",
+                    },
+                )
+
+            elif tname == "transfer_to_interview":
+                tool_msg = ToolMessage(
+                    content="Transferido para a Entrevista de Crédito.",
+                    tool_call_id=tcall_id,
+                )
+                return Command(
+                    goto="interview_subgraph",
+                    update={
+                        "messages": [response, tool_msg],
+                        "active_agent": "interview",
+                    },
+                )
+
             else:
                 # Unsupported tool generated by the LLM
                 tool_msg = ToolMessage(
@@ -232,33 +281,6 @@ def triage_node(state: RouterState) -> Command:
                     "auth_attempts": new_attempts,
                 }
                 return Command(goto="triage_node", update=update)
-
-    # ── Sem tool call — analisa intenção de handoff ──────────────────────────
-    content = response.content if isinstance(response.content, str) else ""
-
-    if "[HANDOFF:credit]" in content or "[HANDOFF:interview]" in content:
-        clean_content = content.replace("[HANDOFF:credit]", "").replace("[HANDOFF:interview]", "").strip()
-        from langchain_core.messages import AIMessage
-        clean_response = AIMessage(content=clean_content) if clean_content else None
-        return Command(
-            goto="credit_subgraph",
-            update={
-                "messages": [clean_response] if clean_response else [],
-                "active_agent": "credit",
-            },
-        )
-
-    if "[HANDOFF:exchange]" in content:
-        clean_content = content.replace("[HANDOFF:exchange]", "").strip()
-        from langchain_core.messages import AIMessage
-        clean_response = AIMessage(content=clean_content)
-        return Command(
-            goto="exchange_subgraph",
-            update={
-                "messages": [clean_response],
-                "active_agent": "exchange",
-            },
-        )
 
     # Resposta normal (triagem em andamento)
     return Command(

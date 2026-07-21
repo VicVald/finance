@@ -16,9 +16,9 @@ from core.agents.router_agent.nodes import triage_node
 
 def build_router_graph():
     """Constrói e retorna o grafo raiz compilado."""
-    from modules.credit.agents.graph import compiled_credit_graph
-    from modules.credit.agents.interview_graph import compiled_interview_graph
-    from modules.exchange.agents.graph import compiled_exchange_graph
+    from modules.credit.agents.credit_agent.graph import compiled_credit_graph
+    from modules.credit.agents.interview_agent.graph import compiled_interview_graph
+    from modules.exchange.agents.exchange_agent.graph import compiled_exchange_graph
 
     builder = StateGraph(RouterState)
 
