@@ -2,11 +2,28 @@
 Pytest configuration and fixtures for Banco Ágil tests.
 """
 
+import os
+# Ensure API keys are present for client instantiation in CI/CD environments
+os.environ["OPENROUTER_API_KEY"] = os.getenv("OPENROUTER_API_KEY", "dummy_openrouter_api_key_for_testing")
+os.environ["LANGSMITH_TRACING"] = "false"
+
 import pytest
 import sys
 from pathlib import Path
 import asyncio
 import uuid
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "requires_api_key: mark test as requiring a real OpenRouter API key"
+    )
+
+def pytest_runtest_setup(item):
+    if any(mark.name == "requires_api_key" for mark in item.iter_markers()):
+        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        # If the key is empty or contains 'dummy', skip the test
+        if not api_key or "dummy" in api_key.lower():
+            pytest.skip("Test skipped because a real OPENROUTER_API_KEY is not configured.")
 
 # Add backend to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))

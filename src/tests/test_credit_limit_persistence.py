@@ -50,7 +50,7 @@ class TestCreditLimitPersistence:
             assert float(reader[0]["limite_atual"]) == 7000.0
 
     def test_solicitar_aumento_limite_updates_csv_on_approval(self, tmp_path):
-        from modules.credit.agents.tools import solicitar_aumento_limite
+        from modules.credit.agents.credit_agent.tools import solicitar_aumento_limite
         from core.config import settings
 
         clientes_file = tmp_path / "clientes.csv"
@@ -74,7 +74,7 @@ class TestCreditLimitPersistence:
             assert float(reader[0]["limite_atual"]) == 7000.0
 
     def test_solicitar_aumento_limite_does_not_update_csv_on_rejection(self, tmp_path):
-        from modules.credit.agents.tools import solicitar_aumento_limite
+        from modules.credit.agents.credit_agent.tools import solicitar_aumento_limite
         from core.config import settings
 
         clientes_file = tmp_path / "clientes.csv"
@@ -108,7 +108,12 @@ class TestTriageHandoffRules:
 
         mock_llm = mock_build_llm.return_value
         mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
-            content="[HANDOFF:credit]"
+            content="",
+            tool_calls=[{
+                "name": "transfer_to_credit",
+                "args": {},
+                "id": "call_transfer_credit"
+            }]
         )
 
         state = RouterState(

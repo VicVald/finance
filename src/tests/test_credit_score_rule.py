@@ -71,8 +71,8 @@ class TestCreditStateBridge:
     """Testa se o estado do Router é mapeado corretamente para o CreditState."""
 
     def test_setup_credit_node_maps_fields(self):
-        from modules.credit.agents.graph import _setup_credit_node
-        from modules.credit.agents.state import CreditState
+        from modules.credit.agents.credit_agent.graph import _setup_credit_node
+        from modules.credit.agents.credit_agent.state import CreditState
 
         # Simulando o estado inicial recebido pelo setup_node
         class MockState:

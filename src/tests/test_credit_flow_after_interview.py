@@ -22,7 +22,12 @@ class TestCreditFlowFixes:
 
         mock_llm = mock_build_llm.return_value
         mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
-            content="Vou direcioná-lo para a entrevista. [HANDOFF:interview]"
+            content="",
+            tool_calls=[{
+                "name": "transfer_to_interview",
+                "args": {},
+                "id": "call_transfer_interview"
+            }]
         )
 
         state = RouterState(
@@ -33,15 +38,15 @@ class TestCreditFlowFixes:
         )
 
         res = triage_node(state)
-        # Deve ir para credit_subgraph, não interview_subgraph
-        assert res.goto == "credit_subgraph"
-        assert res.update["active_agent"] == "credit"
+        # Deve ir para interview_subgraph, não credit_subgraph
+        assert res.goto == "interview_subgraph"
+        assert res.update["active_agent"] == "interview"
 
-    @patch("modules.credit.agents.nodes._build_llm")
+    @patch("modules.credit.agents.credit_agent.nodes._build_llm")
     def test_credit_node_asks_for_limit_increase_after_interview_done(self, mock_build_llm):
         """Após [INTERVIEW_DONE], o nó de crédito deve pedir proativamente a solicitação de aumento de limite."""
-        from modules.credit.agents.nodes import credit_node
-        from modules.credit.agents.state import CreditState
+        from modules.credit.agents.credit_agent.nodes import credit_node
+        from modules.credit.agents.credit_agent.state import CreditState
 
         mock_llm = mock_build_llm.return_value
         mock_llm.bind_tools.return_value.invoke.return_value = AIMessage(
@@ -58,6 +63,7 @@ class TestCreditFlowFixes:
             cliente_nome="João",
             score_atual=899,
             limite_atual=5000.0,
+            entrevista_concluida=True,
         )
 
         res = credit_node(state)

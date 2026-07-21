@@ -10,8 +10,106 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 import pytest
 from core.agents.router_agent.graph import compiled_router_graph
-from core.agents.router_agent.state import RouterState
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+
+
+class MockTriageLLM:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def bind_tools(self, tools, **kwargs):
+        self.tools = tools
+        return self
+
+    def invoke(self, messages, *args, **kwargs):
+        last_human = ""
+        for m in reversed(messages):
+            if m.type == "human" or hasattr(m, "content"):
+                if m.type == "human":
+                    last_human = m.content
+                    break
+        
+        last_human_lower = str(last_human).lower()
+        # Evita loop infinito se a ferramenta de autenticação já foi chamada
+        has_auth_tool_run = any(isinstance(m, ToolMessage) and m.tool_call_id == "call_auth_1" for m in messages)
+        if ("11111111111" in last_human_lower or "15/05/1990" in last_human_lower) and not has_auth_tool_run:
+            return AIMessage(
+                content="",
+                tool_calls=[{
+                    "name": "authenticate_client",
+                    "args": {"cpf": "11111111111", "data_nascimento": "15/05/1990"},
+                    "id": "call_auth_1"
+                }]
+            )
+        elif "aumentar" in last_human_lower or "limite" in last_human_lower:
+            return AIMessage(
+                content="",
+                tool_calls=[{
+                    "name": "transfer_to_credit",
+                    "args": {},
+                    "id": "call_transfer_credit"
+                }]
+            )
+        return AIMessage(content="Autenticação realizada com sucesso. Qual é a intenção/necessidade?")
+
+
+class MockCreditLLM:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def bind_tools(self, tools, **kwargs):
+        self.tools = tools
+        return self
+
+    def invoke(self, messages, *args, **kwargs):
+        # Verifica se o último item é uma ToolMessage para responder o resultado
+        from langchain_core.messages import ToolMessage
+        last_msg = messages[-1] if messages else None
+        if isinstance(last_msg, ToolMessage) and last_msg.tool_call_id != "call_transfer_credit":
+            import ast
+            try:
+                data = ast.literal_eval(last_msg.content)
+                if data.get("status") == "aprovado":
+                    return AIMessage(content=f"Limite de crédito de R$ {data.get('novo_limite_solicitado')} aprovado com sucesso.")
+                elif data.get("status") == "invalido":
+                    return AIMessage(content=data.get("motivo", "Valor inválido."))
+            except Exception:
+                pass
+            return AIMessage(content="Processado.")
+
+        last_human = ""
+        for m in reversed(messages):
+            if m.type == "human" or hasattr(m, "content"):
+                if m.type == "human":
+                    last_human = m.content
+                    break
+        
+        last_human_lower = str(last_human).lower()
+        if "5500" in last_human_lower:
+            return AIMessage(
+                content="",
+                tool_calls=[{
+                    "name": "solicitar_aumento_limite",
+                    "args": {
+                        "cpf_hash": "97b377bbeda9673230ba3fdc477c423916cac65f0a5861c217ee5f19c5fb639d",
+                        "novo_limite": 5500.0
+                    },
+                    "id": "call_solicitar_5500"
+                }]
+            )
+        elif "550" in last_human_lower:
+            return AIMessage(
+                content="",
+                tool_calls=[{
+                    "name": "solicitar_aumento_limite",
+                    "args": {
+                        "cpf_hash": "97b377bbeda9673230ba3fdc477c423916cac65f0a5861c217ee5f19c5fb639d",
+                        "novo_limite": 550.0
+                    },
+                    "id": "call_solicitar_550"
+                }]
+            )
+        return AIMessage(content="Olá, como posso ajudar com seu crédito?")
 
 
 MOCK_CLIENTES_CSV = (
@@ -32,7 +130,9 @@ MOCK_SCORE_LIMITE_CSV = (
 class TestJoaoSilvaE2E:
     """Valida o fluxo completo de alteração de limite de João Silva."""
 
-    def test_joao_silva_limit_increase_approved_and_persisted(self, tmp_path):
+    @patch("core.agents.router_agent.nodes._build_llm", return_value=MockTriageLLM())
+    @patch("modules.credit.agents.credit_agent.nodes._build_llm", return_value=MockCreditLLM())
+    def test_joao_silva_limit_increase_approved_and_persisted(self, mock_credit_llm, mock_triage_llm, tmp_path):
         from core.config import settings
 
         clientes_file = tmp_path / "clientes.csv"
@@ -72,7 +172,9 @@ class TestJoaoSilvaE2E:
                 reader = list(csv.DictReader(f))
                 assert float(reader[0]["limite_atual"]) == 5500.0
 
-    def test_joao_silva_limit_increase_lower_than_current(self, tmp_path):
+    @patch("core.agents.router_agent.nodes._build_llm", return_value=MockTriageLLM())
+    @patch("modules.credit.agents.credit_agent.nodes._build_llm", return_value=MockCreditLLM())
+    def test_joao_silva_limit_increase_lower_than_current(self, mock_credit_llm, mock_triage_llm, tmp_path):
         from core.config import settings
 
         clientes_file = tmp_path / "clientes.csv"
