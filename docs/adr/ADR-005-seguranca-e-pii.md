@@ -1,4 +1,4 @@
-# ADR-005: Segurança e PII (Hash SHA-256 com Salt + PII Middleware LangChain)
+# ADR-005: Segurança e PII (Hash SHA-256 com Salt + PII Customizado para CPF)
 
 **Status:** Aceito  
 **Data:** 2026-07-19  
@@ -65,52 +65,16 @@ CPF_SALT=<string-secreta-longa-e-aleatoria>
 
 **No CSV de rastreabilidade (`trace_eventos.csv`):** O `payload_resumido` usa `mask_cpf()` ao incluir CPF.
 
-### 2. PII Middleware via LangChain Callbacks
+### 2. PII Customizado para CPF
 
-**Estratégia:** Implementar um `BaseCallbackHandler` do LangChain que intercepta os inputs e outputs do LLM, aplicando masking de CPF antes de:
-- Enviar o prompt ao LLM (o modelo nunca vê o CPF completo)
-- Registrar no LangSmith
-- Exibir na UI do Streamlit
+**Estratégia:** Foi implementada uma solução de PII própria e customizada para mascarar CPFs, não utilizando os callbacks do LangChain. O mascaramento (`mask_cpf`) é aplicado de maneira explícita e controlada nas camadas necessárias do sistema.
 
-```python
-# utils/pii_middleware.py
-import re
-from langchain_core.callbacks import BaseCallbackHandler
+Essa abordagem customizada garante que o CPF é mascarado antes de:
+- Enviar o prompt com histórico ou contexto ao LLM (o modelo nunca vê o CPF completo)
+- Registrar eventos e logs de rastreabilidade
+- Exibir os dados na UI do Streamlit
 
-CPF_PATTERN = re.compile(r'\b(\d{3})[.\-]?(\d{3})[.\-]?(\d{3})[.\-]?(\d{2})\b')
-
-class PIIRedactionCallback(BaseCallbackHandler):
-    """
-    Callback que aplica masking de CPF em todos os inputs/outputs do LLM.
-    """
-    
-    def _redact(self, text: str) -> str:
-        def replace(m):
-            digits = m.group(1) + m.group(2) + m.group(3) + m.group(4)
-            return f"{digits[:3]}.XXX.XXX-{digits[-2:]}"
-        return CPF_PATTERN.sub(replace, text)
-    
-    def on_llm_start(self, serialized, prompts, **kwargs):
-        # Redact aplicado nos prompts antes de enviar ao LLM
-        redacted = [self._redact(p) for p in prompts]
-        # Substituição in-place (LangChain não bloqueia mutação aqui)
-        prompts[:] = redacted
-    
-    def on_llm_end(self, response, **kwargs):
-        # Redact aplicado nas respostas do LLM
-        for generation_list in response.generations:
-            for gen in generation_list:
-                gen.text = self._redact(gen.text)
-```
-
-**Registro do callback:**
-```python
-# Adicionado ao ChatOpenAI/ChatAnthropic instanciado para cada agente
-llm = ChatOpenAI(
-    model="...",
-    callbacks=[PIIRedactionCallback()]
-)
-```
+A validação e mascaramento do CPF ocorrem utilizando diretamente a função `mask_cpf` contida em `utils/pii.py`.
 
 ### Política de Exibição de CPF
 
@@ -153,7 +117,7 @@ def authenticate(cpf_input: str, data_nasc_input: str) -> bool:
 **Positivas:**
 - CPF nunca trafega em texto puro dentro do sistema após a entrada do usuário
 - O LangSmith não armazena CPFs completos (proteção de dados nos traces)
-- O callback é reutilizável em todos os agentes via injeção no LLM instanciado
+- O mascaramento customizado explícito nos pontos de entrada e saída evita bugs de manipulação de string e falsos positivos que poderiam ocorrer com um middleware de Regex interceptando todo o LLM
 - Hash determinístico com salt: lookup O(1) no CSV
 
 **Negativas:**
@@ -167,4 +131,3 @@ def authenticate(cpf_input: str, data_nasc_input: str) -> bool:
 
 - [ADR-004: Rastreabilidade](./ADR-004-rastreabilidade.md)
 - [LGPD - Lei nº 13.709/2018](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm)
-- [LangChain Callbacks](https://python.langchain.com/docs/concepts/callbacks/)

@@ -1,25 +1,25 @@
-# 🏦 Banco Ágil - Sistema Multi-Agentes de IA para Serviços Bancários
+# Banco Ágil - Sistema Multi-Agentes de IA para Serviços Bancários
 
-## 💡 Ideia do Projeto
+## Ideia do Projeto
 
-O **Banco Ágil** é uma Prova de Conceito (PoC) técnica projetada para validar a viabilidade de um sistema de atendimento bancário inteligente, personalizado e autônomo. A ideia central é explorar a orquestração de múltiplos agentes de IA especializados que colaboram de forma fluida para resolver demandas do usuário (como análises de crédito, reavaliações financeiras interativas e cotações de câmbio). O sistema vai muito além de um simples chatbot de perguntas e respostas, atuando como um ecossistema capaz de lidar com transições de estado complexas (handoffs) e tomada de decisão embutida.
+O **Banco Ágil** é uma Prova de Conceito (PoC) técnica projetada para validar a viabilidade de um sistema de atendimento bancário inteligente, personalizado e autônomo. A ideia central é explorar a orquestração de múltiplos agentes de IA especializados que colaboram de forma fluida para resolver demandas do usuário (como análises de crédito, reavaliações financeiras interativas e cotações de câmbio). O sistema vai muito além de um simples chatbot de perguntas e respostas, é um ecossistema capaz de lidar com transições de estado complexas (handoffs) e tomada de decisão embutida.
 
-## 🛠️ Stack Tecnológica
+## Stack Tecnológica
 
 O sistema foi arquitetado visando forte tipagem, controle de orquestração e observabilidade. As tecnologias principais são:
 
-- **LangGraph**: O núcleo da nossa orquestração. O LangGraph foi escolhido pela sua capacidade robusta de gerenciar fluxos complexos de interação através de grafos e subgrafos. Ele resolveu desafios inerentes de sistemas multi-agentes, facilitando imensamente o _handoff_ (transferência de responsabilidades e contexto entre agentes), a execução de _tool calling_ e a diferenciação visual e lógica dos passos tomados pela IA. Além disso, conta com integrações nativas fantásticas — especialmente com o LangSmith, conectando rastreabilidade de ponta a ponta de forma praticamente automática — e permitiu velocidade máxima na criação dos fluxos devido à sólida experiência da equipe com a ferramenta.
-- **Pydantic**: O backbone da estrutura de dados. O Pydantic é empregado extensivamente para aplicar tipagem forte no Python. Ele assegura que o estado (`state`) compartilhado entre os nós do grafo, as saídas e entradas do LLM (structured outputs) e as especificações de ferramentas sejam altamente confiáveis, validadas e parseadas corretamente antes que as regras de negócio sejam executadas.
+- **LangGraph**: O núcleo da orquestração. O LangGraph foi escolhido pela sua capacidade robusta de gerenciar fluxos complexos de interação através de grafos e subgrafos. Ele resolveu desafios inerentes de sistemas multi-agentes, facilitando o _handoff_ (transferência de responsabilidades e contexto entre agentes), a execução de _tool calling_ e a diferenciação visual e lógica dos passos tomados pela IA. Além disso, conta com integrações nativas como o LangSmith, conectando rastreabilidade de ponta a ponta de forma praticamente automática — e permitiu velocidade máxima na criação dos fluxos devido à experiência prévia com a ferramenta.
+- **Pydantic**: O backbone da estrutura de dados. O Pydantic é empregado para aplicar tipagem forte no Python, assegurando que o estado (`state`) compartilhado entre os nós do grafo, as saídas e entradas do LLM (structured outputs) e as especificações de ferramentas sejam altamente confiáveis, validadas e parseadas corretamente antes que as regras de negócio sejam executadas.
 
-## 🎯 Principais Funcionalidades
+## Principais Funcionalidades
 
-- ✅ **Múltiplos agentes especializados** (Triagem, Crédito, Entrevista Financeira e Câmbio) rodando em subgrafos isolados
-- ✅ **Orquestração avançada** com roteamento de continuidade e handoffs mantendo todo o histórico
-- ✅ **Autenticação segura** via JWT isolando as sessões dos usuários por CPF
-- ✅ **Proteção PII LGPD-compliant** utilizando hash SHA-256 e interceptação para mascaramento antes de chamar os LLMs
-- ✅ **Extensa Suíte de Evals** que valida o comportamento ético/segurança do LLM (evitando injeções) e regras vitais de negócio
+- **Múltiplos agentes especializados** (Triagem, Crédito, Entrevista Financeira e Câmbio) rodando em subgrafos isolados
+- **Orquestração avançada** com roteamento de continuidade e handoffs mantendo todo o histórico
+- **Autenticação segura** via JWT isolando as sessões dos usuários por CPF
+- **Proteção PII LGPD-compliant** utilizando hash SHA-256 e interceptação para mascaramento personalizado antes de chamar os LLMs
+- **Extensa Suíte de Evals** que valida o comportamento ético/segurança do LLM (evitando injeções) e regras vitais de negócio
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ O sistema foi arquitetado visando forte tipagem, controle de orquestração e ob
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 🔄 Fluxo de Interação dos Agentes
+## Fluxo de Interação dos Agentes
 
 ```
 1. AUTENTICAÇÃO (Router)
@@ -103,7 +103,7 @@ O sistema foi arquitetado visando forte tipagem, controle de orquestração e ob
    Conversa encerrada
 ```
 
-## 📊 Dados de Exemplo (CSV)
+## Dados de Exemplo (CSV)
 
 ### Usuários no `clientes.csv`
 
@@ -111,20 +111,21 @@ O arquivo contém usuários de teste com dados hashados. Para usar os usuários 
 
 | Cliente | CPF | Data Nascimento |
 |---------|-----------------|-----------------|
-| João Silva | 11111111111 | 15/05/1990 
-| Maria Oliveira | 22222222222 | 20/10/1985 
-| Pedro Santos | 33333333333 | 03/03/1995 
-| Ana Costa | 44444444444 | 12/12/1988 
+| João Silva | 11111111111 | 15/05/1990 |
+| Maria Oliveira | 22222222222 | 20/10/1985 |
+| Pedro Santos | 33333333333 | 03/03/1995 |
+| Ana Costa | 44444444444 | 12/12/1988 |
+| Victor | 00120003010 | 06/03/2006 |
 
 **Como fazer login com esses usuários:**
 
-Os usuários existem no sistema como CPF + data de nascimento. A senha é armazenada por hash. Para testar, use dados reais que correspondam aos CPFs:
+Os usuários teste existem no sistema com botões prontos para teste (ou via formulário manual). Para fins de simplicidade de testes da PoC, as senhas de teste correspondentes são armazenadas em texto plano no banco de dados (`clientes.csv`). Para testar, use dados reais que correspondam aos CPFs:
 
 ```
 Exemplo:
-  CPF: Use um dos CPFs reais do clientes.csv
+  Após entrar na conta utilizando um dos botões de usuário disponível, o JWT do usuário será gerado. Agora na opção de chat faça autenticação com o sistema multi-agêntico, utilizando os dados do usuário logado: 
+  CPF: Use um dos CPFs reais dos usuários disponíveis nos botões de login (`generate_cpfs.py`)
   Data de Nascimento: Use a data correspondente (ex: 15/05/1990)
-  Senha: Qualquer uma (a validação atual usa CPF + data de nascimento)
 ```
 
 > **Nota:** Os CPFs reais são armazenados como hash SHA-256 com salt no arquivo para proteção de dados (LGPD).
@@ -145,9 +146,9 @@ O score é recalculado pelo **Agente de Entrevista Financeira** baseado em:
 - Histórico de pagamentos
 - Tempo como cliente
 
-## 🚀 Como Usar
+## Como Usar
 
-### ⚙️ Variáveis de Ambiente
+### Variáveis de Ambiente
 
 Antes de iniciar o projeto, crie o arquivo `.env` a partir do template:
 
@@ -193,16 +194,16 @@ cp .env.example .env
 # Edite e preencha suas chaves
 
 # 4a. Execute o Backend (em um terminal)
-.venv/bin/python -m uvicorn src.backend.main:app --reload
+uv run src/backend/main.py --reload
 
 # 4b. Execute a UI (em outro terminal)
-.venv/bin/streamlit run src/ui/streamlit_app.py
+uv run streamlit run src/ui/app.py
 
 # Backend: http://localhost:8000
 # UI: http://localhost:8501
 ```
 
-## 🔐 Segurança e Proteção de Dados
+## Segurança e Proteção de Dados
 
 ### Proteção de CPF (PII - Personally Identifiable Information)
 
@@ -212,23 +213,23 @@ cp .env.example .env
 - Cada arquivo CSV de auditoria mascara CPF como: `123.XXX.XXX-09`
 
 **Masking em Tempo Real:**
-- Middleware LangChain `PIIRedactionCallback` reduz CPF antes de enviar ao LLM
+- Tratamento explícito e customizado via `mask_cpf` reduz o CPF antes de enviar ao LLM ou registrar em logs
 - As respostas do agente exibem apenas os 3 primeiros e 2 últimos dígitos
 - LangSmith traces também utilizam CPF mascarado
 
 **Autenticação:**
 - JWT com expiração de 15 minutos (access token)
 - Refresh token com expiração de 7 dias
-- 3 tentativas de autenticação antes de bloquear sessão
+- 3 tentativas de autenticação no sistema multi-agêntico antes de bloquear sessão
 
 ### Conformidade LGPD
 
-- ✅ CPF armazenado apenas como hash
-- ✅ Consentimento implícito no login
-- ✅ Logs auditáveis de todas as operações
-- ✅ Dados mascarados em outputs
+- CPF armazenado apenas como hash
+- Consentimento implícito no login
+- Logs auditáveis de todas as operações
+- Dados mascarados em outputs
 
-## 📐 Decisões Arquiteturais (ADRs)
+## Decisões Arquiteturais (ADRs)
 
 O projeto segue a metodologia **Architecture Decision Records (ADR)** em `/docs/adr/`:
 
@@ -238,7 +239,7 @@ O projeto segue a metodologia **Architecture Decision Records (ADR)** em `/docs/
 | ADR-002 | Orquestração e Handoff | Router central delegando execuções para subgrafos por domínio |
 | ADR-003 | Gerenciamento de Estado | Pydantic como garantidor de validação e tipagem de estados |
 | ADR-004 | Rastreabilidade | Uso do LangSmith + logs CSV locais para auditoria das execuções |
-| ADR-005 | Segurança e PII | Ocultamento de CPF via middleware e armazenamento com SHA-256 |
+| ADR-005 | Segurança e PII | Ocultamento customizado de CPF e armazenamento com SHA-256 |
 | ADR-006 | Interface Streamlit | Componentes customizados e SSE (Server-Sent Events) para streaming |
 | ADR-007 | Agente de Câmbio | Múltiplas APIs (BrasilAPI, AwesomeAPI) com mecânica de fallback |
 | ADR-008 | Autenticação JWT | Autenticação baseada em token validada no roteamento principal |
@@ -251,7 +252,7 @@ O projeto segue a metodologia **Architecture Decision Records (ADR)** em `/docs/
 
 Leia os detalhes completos em `/docs/adr/`.
 
-## 📁 Estrutura de Diretórios
+## Estrutura de Diretórios
 
 ```
 finance/
@@ -279,7 +280,7 @@ finance/
 │   │       ├── score_limite.csv       # Regras de limite
 │   │       ├── solicitacoes_aumento_limite.csv
 │   └── ui/
-│       ├── streamlit_app.py           # Entry point Streamlit
+│       ├── app.py                     # Entry point Streamlit
 │       └── components/
 ├── docs/
 │   └── adr/                           # Decisões arquiteturais
@@ -292,7 +293,7 @@ finance/
 └── README.md                          # Este arquivo
 ```
 
-## 🧪 Testando o Sistema
+## Testando o Sistema
 
 ### 1. Testes Automatizados (pytest)
 
@@ -304,16 +305,15 @@ uv run pytest
 
 Isso verificará as regras de handoff, cálculos de score de crédito, manipulação de PII e persistência de limite.
 
-### 2. Teste de Autenticação
+### 2. Teste de Autenticação e Uso do Assistente
 
-```
-1. Abra http://localhost:8501
-2. Clique em "Login"
-3. Use dados de um cliente do clientes.csv:
-   - CPF: Qualquer um dos CPFs da tabela acima
-   - Data de Nascimento: A data correspondente
-   - Senha: Qualquer uma (validação atual: CPF + data)
-```
+O sistema possui um fluxo de segurança para o uso da inteligência artificial:
+
+1. **Login na Plataforma:** O usuário acessa a aplicação (`http://localhost:8501`) e realiza o login padrão (autenticado via JWT).
+2. **Acesso ao Chat:** Ao abrir o sistema multi-agente (chat localizado no canto inferior direito), o assistente virtual entra em ação.
+3. **Autenticação com o Agente:** Antes de processar demandas financeiras, o agente de triagem solicitará uma confirmação de identidade. Forneça os dados de um cliente presente no `clientes.csv`:
+   - **CPF:** O CPF correspondente ao cliente
+   - **Data de Nascimento:** A data de nascimento associada
 
 ### 3. Teste de Consulta de Limite
 
@@ -374,9 +374,5 @@ Os cenários `/ai-battle` simulam ataques de red-teaming. Algumas falhas são co
 | Engenheiro Social de Limite | Varia conforme o modelo consegue negar pressão social, mas tende a conceder permissões que ele não tem, melhora com prompt e guardrails |
 | Cotador Insistente | Varia conforme o modelo mantém consistência nas cotações e disponibilidade das APIs |
 | Extrator de PII | Defesa robusta contra extração de dados |
-
-### 6. Rastreabilidade
-
-- **LangSmith:** Acesse dashboard.smith.langchain.com para ver traces
 
 
